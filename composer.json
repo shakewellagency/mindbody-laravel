@@ -1,0 +1,83 @@
+{
+    "name": "shakewell/mindbody-laravel",
+    "description": "Laravel package for Mindbody Public API v6 and Webhooks integration",
+    "keywords": [
+        "shakewell",
+        "laravel",
+        "mindbody",
+        "api",
+        "webhooks",
+        "fitness",
+        "scheduling"
+    ],
+    "homepage": "https://github.com/shakewell/mindbody-laravel",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Chora",
+            "email": "michael@shakewell.co",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "spatie/laravel-package-tools": "^1.13",
+        "illuminate/contracts": "^9.0|^10.0|^11.0",
+        "guzzlehttp/guzzle": "^7.0",
+        "nesbot/carbon": "^2.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "nunomaduro/collision": "^7.8",
+        "orchestra/testbench": "^8.8",
+        "pestphp/pest": "^2.0",
+        "pestphp/pest-plugin-arch": "^2.0",
+        "pestphp/pest-plugin-laravel": "^2.0",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan-deprecation-rules": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "spatie/laravel-ray": "^1.26"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shakewell\\MindbodyLaravel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Shakewell\\MindbodyLaravel\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "@composer run prepare",
+        "clear": "@php vendor/bin/testbench package:purge-mindbody-laravel --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": [
+            "@composer run prepare",
+            "@php vendor/bin/pint"
+        ],
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Shakewell\\MindbodyLaravel\\MindbodyLaravelServiceProvider"
+            ],
+            "aliases": {
+                "Mindbody": "Shakewell\\MindbodyLaravel\\Facades\\Mindbody"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
