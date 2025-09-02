@@ -262,7 +262,7 @@ class ProcessWebhookEventsCommand extends Command
 
     protected function displayFailedEventsSummary(): void
     {
-        $failedEvents = WebhookEvent::where('status', 'failed')
+        $failedEvents = WebhookEvent::whereNotNull('error')
             ->selectRaw('event_type, COUNT(*) as count')
             ->groupBy('event_type')
             ->get();

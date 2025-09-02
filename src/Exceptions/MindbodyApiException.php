@@ -25,7 +25,7 @@ class MindbodyApiException extends MindbodyException
         $message = $apiError['Message'] ?? 'Unknown API error';
         $code = $apiError['Code'] ?? $response->status();
 
-        $exception = new static($message, $code);
+        $exception = new self($message, $code);
         $exception->response = $response;
         $exception->apiError = $apiError;
 

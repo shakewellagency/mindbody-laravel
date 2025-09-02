@@ -132,9 +132,9 @@ class TestApiConnectionCommand extends Command
         $this->info('Testing API endpoints...');
 
         $endpoints = [
-            'Site Information' => fn () => $this->client->site()->getLocations(),
-            'Staff List' => fn () => $this->client->staff()->getAll(['Limit' => 1]),
-            'Services' => fn () => $this->client->site()->getServices(['Limit' => 1]),
+            'Site Information' => fn () => $this->client->site->getLocations(),
+            'Staff List' => fn () => $this->client->staff->getAll(['Limit' => 1]),
+            'Services' => fn () => $this->client->site->getServices(['Limit' => 1]),
         ];
 
         $allPassed = true;
