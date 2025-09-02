@@ -10,8 +10,6 @@ parameters:
     tmpDir: build/phpstan
     ignoreErrors:
         -
-            identifier: missingType.iterableValue
-        -
             message: '#Call to an undefined static method.*#'
         -
             message: '#Call to an undefined method.*#'
