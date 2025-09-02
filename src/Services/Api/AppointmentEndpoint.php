@@ -1,43 +1,42 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 use Carbon\Carbon;
 
 /**
- * Appointment endpoint for managing appointments and bookings
+ * Appointment endpoint for managing appointments and bookings.
  */
 class AppointmentEndpoint extends BaseEndpoint
 {
     protected string $endpoint = 'appointment';
 
     /**
-     * Get all appointments with optional filtering
+     * Get all appointments with optional filtering.
      */
     public function all(array $params = []): array
     {
         $params = $this->prepareAppointmentParams($params);
-        
+
         $response = $this->client->get('appointment/appointments', $params);
-        
+
         $appointments = $this->extractResultsFromResponse($response);
-        
+
         return $this->transformRecords($appointments);
     }
 
     /**
-     * Find a specific appointment by ID
+     * Find a specific appointment by ID.
      */
     public function find(int $appointmentId): ?array
     {
         $response = $this->client->get('appointment/appointments', [
-            'AppointmentIds' => [$appointmentId]
+            'AppointmentIds' => [$appointmentId],
         ]);
 
         $appointments = $this->extractResultsFromResponse($response);
-        
+
         if (empty($appointments)) {
             return null;
         }
@@ -46,7 +45,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Find appointments by multiple IDs
+     * Find appointments by multiple IDs.
      */
     public function findMany(array $appointmentIds): array
     {
@@ -55,27 +54,27 @@ class AppointmentEndpoint extends BaseEndpoint
         }
 
         $response = $this->client->get('appointment/appointments', [
-            'AppointmentIds' => $appointmentIds
+            'AppointmentIds' => $appointmentIds,
         ]);
 
         $appointments = $this->extractResultsFromResponse($response);
-        
+
         return $this->transformRecords($appointments);
     }
 
     /**
-     * Book a new appointment
+     * Book a new appointment.
      */
     public function book(array $data): array
     {
         $this->validateRequired($data, ['ClientId', 'SessionTypeId', 'StaffId', 'StartDateTime']);
-        
+
         $appointmentData = $this->validateAppointmentData($data);
-        
+
         $response = $this->client->post('appointment/addappointment', $appointmentData);
-        
+
         $this->clearCache();
-        
+
         if (isset($response['Appointment'])) {
             return $this->transformRecord($response['Appointment']);
         }
@@ -84,7 +83,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Update an existing appointment
+     * Update an existing appointment.
      */
     public function update(int $appointmentId, array $data): array
     {
@@ -92,7 +91,7 @@ class AppointmentEndpoint extends BaseEndpoint
         $appointmentData['AppointmentId'] = $appointmentId;
 
         $response = $this->client->post('appointment/updateappointment', $appointmentData);
-        
+
         $this->clearCache();
 
         if (isset($response['Appointment'])) {
@@ -103,7 +102,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Cancel an appointment
+     * Cancel an appointment.
      */
     public function cancel(int $appointmentId, string $reason = '', bool $sendEmail = true): array
     {
@@ -112,14 +111,14 @@ class AppointmentEndpoint extends BaseEndpoint
             'CancelReason' => $reason,
             'SendEmail' => $sendEmail,
         ]);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Get appointments for a specific date range
+     * Get appointments for a specific date range.
      */
     public function forDateRange(Carbon $startDate, Carbon $endDate, array $params = []): array
     {
@@ -132,54 +131,58 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get today's appointments
+     * Get today's appointments.
      */
     public function today(array $params = []): array
     {
         $today = Carbon::today();
+
         return $this->forDateRange($today, $today, $params);
     }
 
     /**
-     * Get this week's appointments
+     * Get this week's appointments.
      */
     public function thisWeek(array $params = []): array
     {
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
-        
+
         return $this->forDateRange($startOfWeek, $endOfWeek, $params);
     }
 
     /**
-     * Get appointments by client
+     * Get appointments by client.
      */
     public function byClient(string $clientId, array $params = []): array
     {
         $params['ClientIds'] = [$clientId];
+
         return $this->all($params);
     }
 
     /**
-     * Get appointments by staff member
+     * Get appointments by staff member.
      */
     public function byStaff(int $staffId, array $params = []): array
     {
         $params['StaffIds'] = [$staffId];
+
         return $this->all($params);
     }
 
     /**
-     * Get appointments by location
+     * Get appointments by location.
      */
     public function byLocation(int $locationId, array $params = []): array
     {
         $params['LocationIds'] = [$locationId];
+
         return $this->all($params);
     }
 
     /**
-     * Search appointments by various criteria
+     * Search appointments by various criteria.
      */
     public function search(array $criteria = []): array
     {
@@ -217,7 +220,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get staff availability for appointments
+     * Get staff availability for appointments.
      */
     public function staffAvailability(int $staffId, Carbon $date, array $params = []): array
     {
@@ -233,14 +236,14 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get available appointment times
+     * Get available appointment times.
      */
     public function availableTimes(array $params = []): array
     {
         $this->validateRequired($params, ['SessionTypeIds', 'StartDate']);
-        
+
         $params = $this->prepareParams($params);
-        
+
         if (isset($params['start_date'])) {
             $params['StartDate'] = $this->formatDateOnly($params['start_date']);
             unset($params['start_date']);
@@ -252,7 +255,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get appointment add-ons
+     * Get appointment add-ons.
      */
     public function addOns(int $appointmentId): array
     {
@@ -264,7 +267,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Add appointment add-on
+     * Add appointment add-on.
      */
     public function addAddOn(int $appointmentId, int $serviceId, int $quantity = 1): array
     {
@@ -273,14 +276,14 @@ class AppointmentEndpoint extends BaseEndpoint
             'ServiceId' => $serviceId,
             'Quantity' => $quantity,
         ]);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Remove appointment add-on
+     * Remove appointment add-on.
      */
     public function removeAddOn(int $appointmentId, int $addOnId): array
     {
@@ -288,28 +291,28 @@ class AppointmentEndpoint extends BaseEndpoint
             'AppointmentId' => $appointmentId,
             'AddOnId' => $addOnId,
         ]);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Check in a client to their appointment
+     * Check in a client to their appointment.
      */
     public function checkIn(int $appointmentId): array
     {
         $response = $this->client->post('appointment/checkinappointment', [
             'AppointmentId' => $appointmentId,
         ]);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Get booking windows (when appointments can be booked)
+     * Get booking windows (when appointments can be booked).
      */
     public function bookingWindows(): array
     {
@@ -319,9 +322,9 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Reschedule an appointment
+     * Reschedule an appointment.
      */
-    public function reschedule(int $appointmentId, Carbon $newDateTime, int $newStaffId = null): array
+    public function reschedule(int $appointmentId, Carbon $newDateTime, ?int $newStaffId = null): array
     {
         $data = [
             'AppointmentId' => $appointmentId,
@@ -336,43 +339,47 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get no-show appointments
+     * Get no-show appointments.
      */
     public function noShows(array $params = []): array
     {
         $params['AppointmentStatuses'] = ['No Show'];
+
         return $this->all($params);
     }
 
     /**
-     * Get cancelled appointments
+     * Get cancelled appointments.
      */
     public function cancelled(array $params = []): array
     {
         $params['AppointmentStatuses'] = ['Cancelled'];
+
         return $this->all($params);
     }
 
     /**
-     * Get completed appointments
+     * Get completed appointments.
      */
     public function completed(array $params = []): array
     {
         $params['AppointmentStatuses'] = ['Completed'];
+
         return $this->all($params);
     }
 
     /**
-     * Get confirmed appointments
+     * Get confirmed appointments.
      */
     public function confirmed(array $params = []): array
     {
         $params['AppointmentStatuses'] = ['Confirmed'];
+
         return $this->all($params);
     }
 
     /**
-     * Mark appointment as arrived
+     * Mark appointment as arrived.
      */
     public function markAsArrived(int $appointmentId): array
     {
@@ -380,7 +387,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Mark appointment as no-show
+     * Mark appointment as no-show.
      */
     public function markAsNoShow(int $appointmentId): array
     {
@@ -388,7 +395,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Mark appointment as completed
+     * Mark appointment as completed.
      */
     public function markAsCompleted(int $appointmentId): array
     {
@@ -396,16 +403,17 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get appointments that need confirmation
+     * Get appointments that need confirmation.
      */
     public function needingConfirmation(array $params = []): array
     {
         $params['AppointmentStatuses'] = ['Requested'];
+
         return $this->all($params);
     }
 
     /**
-     * Confirm an appointment
+     * Confirm an appointment.
      */
     public function confirm(int $appointmentId): array
     {
@@ -413,7 +421,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Extract results from API response
+     * Extract results from API response.
      */
     protected function extractResultsFromResponse(array $response): array
     {
@@ -421,16 +429,16 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Prepare appointment-specific parameters
+     * Prepare appointment-specific parameters.
      */
     protected function prepareAppointmentParams(array $params): array
     {
         // Set default date range if not provided
-        if (!isset($params['StartDate']) && !isset($params['start_date'])) {
+        if (! isset($params['StartDate']) && ! isset($params['start_date'])) {
             $params['StartDate'] = Carbon::now()->format('Y-m-d');
         }
 
-        if (!isset($params['EndDate']) && !isset($params['end_date'])) {
+        if (! isset($params['EndDate']) && ! isset($params['end_date'])) {
             $params['EndDate'] = Carbon::now()->addDays(7)->format('Y-m-d');
         }
 
@@ -448,7 +456,7 @@ class AppointmentEndpoint extends BaseEndpoint
         // Handle array parameters
         $arrayParams = ['AppointmentIds', 'ClientIds', 'StaffIds', 'LocationIds', 'SessionTypeIds', 'AppointmentStatuses'];
         foreach ($arrayParams as $param) {
-            if (isset($params[$param]) && !is_array($params[$param])) {
+            if (isset($params[$param]) && ! \is_array($params[$param])) {
                 $params[$param] = [$params[$param]];
             }
         }
@@ -457,7 +465,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Validate and prepare appointment data
+     * Validate and prepare appointment data.
      */
     protected function validateAppointmentData(array $data): array
     {
@@ -483,7 +491,7 @@ class AppointmentEndpoint extends BaseEndpoint
         ];
 
         foreach ($fieldMappings as $alias => $field) {
-            if (isset($data[$alias]) && !isset($data[$field])) {
+            if (isset($data[$alias]) && ! isset($data[$field])) {
                 $data[$field] = $data[$alias];
                 unset($data[$alias]);
             }
@@ -493,7 +501,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get date fields specific to appointments
+     * Get date fields specific to appointments.
      */
     protected function getDateFields(): array
     {
@@ -507,7 +515,7 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Process bulk appointment operations
+     * Process bulk appointment operations.
      */
     protected function processBulkBatch(string $operation, array $batch): array
     {
@@ -524,12 +532,12 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk book appointments
+     * Bulk book appointments.
      */
     protected function bulkBook(array $appointments): array
     {
         $results = [];
-        
+
         foreach ($appointments as $appointmentData) {
             try {
                 $results[] = $this->book($appointmentData);
@@ -546,14 +554,14 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk cancel appointments
+     * Bulk cancel appointments.
      */
     protected function bulkCancel(array $cancellations): array
     {
         $results = [];
-        
+
         foreach ($cancellations as $cancellation) {
-            if (!isset($cancellation['appointment_id'])) {
+            if (! isset($cancellation['appointment_id'])) {
                 $results[] = [
                     'success' => false,
                     'error' => 'appointment_id is required',
@@ -581,14 +589,14 @@ class AppointmentEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk update appointments
+     * Bulk update appointments.
      */
     protected function bulkUpdate(array $updates): array
     {
         $results = [];
-        
+
         foreach ($updates as $update) {
-            if (!isset($update['appointment_id'])) {
+            if (! isset($update['appointment_id'])) {
                 $results[] = [
                     'success' => false,
                     'error' => 'appointment_id is required',

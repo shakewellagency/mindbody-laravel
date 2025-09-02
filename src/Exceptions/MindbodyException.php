@@ -1,28 +1,27 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Exceptions;
 
 use Exception;
 
 /**
- * Base exception class for all Mindbody-related exceptions
+ * Base exception class for all Mindbody-related exceptions.
  */
-class MindbodyException extends Exception
+class MindbodyException extends \Exception
 {
     /**
-     * Additional context data
+     * Additional context data.
      */
     protected array $context = [];
 
     /**
-     * Create a new Mindbody exception instance
+     * Create a new Mindbody exception instance.
      */
     public function __construct(
         string $message = '',
         int $code = 0,
-        ?Exception $previous = null,
+        ?\Exception $previous = null,
         array $context = []
     ) {
         parent::__construct($message, $code, $previous);
@@ -30,7 +29,7 @@ class MindbodyException extends Exception
     }
 
     /**
-     * Get the exception context
+     * Get the exception context.
      */
     public function getContext(): array
     {
@@ -38,7 +37,7 @@ class MindbodyException extends Exception
     }
 
     /**
-     * Set additional context
+     * Set additional context.
      */
     public function setContext(array $context): self
     {
@@ -48,7 +47,7 @@ class MindbodyException extends Exception
     }
 
     /**
-     * Add context data
+     * Add context data.
      */
     public function addContext(string $key, mixed $value): self
     {

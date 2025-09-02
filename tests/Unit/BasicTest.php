@@ -1,41 +1,41 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Tests\Unit;
 
-use Shakewell\MindbodyLaravel\Tests\TestCase;
-use Shakewell\MindbodyLaravel\Services\MindbodyClient;
 use Shakewell\MindbodyLaravel\Facades\Mindbody;
+use Shakewell\MindbodyLaravel\Services\MindbodyClient;
+use Shakewell\MindbodyLaravel\Tests\TestCase;
 
-class BasicTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
+final class BasicTest extends TestCase
 {
-    /** @test */
-    public function it_can_resolve_mindbody_client_from_container()
+    public function testItCanResolveMindbodyClientFromContainer()
     {
         $client = app(MindbodyClient::class);
-        
-        $this->assertInstanceOf(MindbodyClient::class, $client);
+
+        self::assertInstanceOf(MindbodyClient::class, $client);
     }
 
-    /** @test */
-    public function it_can_access_facade()
+    public function testItCanAccessFacade()
     {
-        $this->assertTrue(class_exists(\Shakewell\MindbodyLaravel\Facades\Mindbody::class));
+        self::assertTrue(class_exists(Mindbody::class));
     }
 
-    /** @test */
-    public function it_loads_configuration()
+    public function testItLoadsConfiguration()
     {
-        $this->assertNotNull(config('mindbody.api.base_url'));
-        $this->assertNotNull(config('mindbody.api.site_id'));
+        self::assertNotNull(config('mindbody.api.base_url'));
+        self::assertNotNull(config('mindbody.api.site_id'));
     }
 
-    /** @test */
-    public function it_registers_service_provider()
+    public function testItRegistersServiceProvider()
     {
         $providers = app()->getLoadedProviders();
-        
-        $this->assertArrayHasKey('Shakewell\\MindbodyLaravel\\MindbodyLaravelServiceProvider', $providers);
+
+        self::assertArrayHasKey('Shakewell\MindbodyLaravel\MindbodyLaravelServiceProvider', $providers);
     }
 }

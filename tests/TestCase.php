@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,7 +17,7 @@ abstract class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Shakewell\\MindbodyLaravel\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            static fn (string $modelName) => 'Shakewell\MindbodyLaravel\Database\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 
@@ -53,19 +52,19 @@ abstract class TestCase extends Orchestra
     }
 
     /**
-     * Define database migrations
+     * Define database migrations.
      */
     protected function defineDatabaseMigrations(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
     }
 
     /**
-     * Mock HTTP responses for testing
+     * Mock HTTP responses for testing.
      */
     protected function mockHttpResponse(array $responses): void
     {
-        $this->app->bind('http-client', function () use ($responses) {
+        $this->app->bind('http-client', static function () use ($responses) {
             return new \GuzzleHttp\Client([
                 'handler' => \GuzzleHttp\HandlerStack::create(
                     new \GuzzleHttp\Handler\MockHandler($responses)
@@ -75,15 +74,15 @@ abstract class TestCase extends Orchestra
     }
 
     /**
-     * Create a fake webhook payload for testing
+     * Create a fake webhook payload for testing.
      */
     protected function createWebhookPayload(string $eventType = 'appointment.booked', array $data = []): array
     {
         return [
-            'EventId' => 'test-event-' . uniqid(),
-            'MessageId' => 'test-message-' . uniqid(),
+            'EventId' => 'test-event-'.uniqid(),
+            'MessageId' => 'test-message-'.uniqid(),
             'EventType' => $eventType,
-            'EventInstanceId' => 'test-instance-' . uniqid(),
+            'EventInstanceId' => 'test-instance-'.uniqid(),
             'EventSchemaVersion' => 1,
             'EventOccurredDateTime' => now()->toISOString(),
             'SiteId' => config('mindbody.api.site_id'),
@@ -106,17 +105,18 @@ abstract class TestCase extends Orchestra
     }
 
     /**
-     * Create a webhook signature for testing
+     * Create a webhook signature for testing.
      */
     protected function createWebhookSignature(string $payload, ?string $key = null): string
     {
         $key = $key ?: config('mindbody.webhooks.signature_key');
         $hash = hash_hmac('sha256', $payload, $key);
-        return 'sha256=' . $hash;
+
+        return 'sha256='.$hash;
     }
 
     /**
-     * Assert that a webhook event was created
+     * Assert that a webhook event was created.
      */
     protected function assertWebhookEventCreated(string $eventId, string $eventType): void
     {
@@ -127,7 +127,7 @@ abstract class TestCase extends Orchestra
     }
 
     /**
-     * Assert that an event was dispatched
+     * Assert that an event was dispatched.
      */
     protected function assertEventDispatched(string $eventClass): void
     {

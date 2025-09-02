@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -10,16 +9,18 @@ use Illuminate\Queue\SerializesModels;
 use Shakewell\MindbodyLaravel\Models\WebhookEvent;
 
 /**
- * Event fired when a webhook is received from Mindbody
+ * Event fired when a webhook is received from Mindbody.
  */
 class WebhookReceived
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public WebhookEvent $webhookEvent;
 
     /**
-     * Create a new event instance
+     * Create a new event instance.
      */
     public function __construct(WebhookEvent $webhookEvent)
     {
@@ -27,7 +28,7 @@ class WebhookReceived
     }
 
     /**
-     * Get the event type
+     * Get the event type.
      */
     public function getEventType(): string
     {
@@ -35,7 +36,7 @@ class WebhookReceived
     }
 
     /**
-     * Get the event data
+     * Get the event data.
      */
     public function getEventData(): array
     {
@@ -43,7 +44,7 @@ class WebhookReceived
     }
 
     /**
-     * Get the site ID
+     * Get the site ID.
      */
     public function getSiteId(): ?string
     {
@@ -51,7 +52,7 @@ class WebhookReceived
     }
 
     /**
-     * Get the Mindbody event ID
+     * Get the Mindbody event ID.
      */
     public function getEventId(): ?string
     {
@@ -59,7 +60,7 @@ class WebhookReceived
     }
 
     /**
-     * Check if this is a specific event type
+     * Check if this is a specific event type.
      */
     public function isEventType(string $type): bool
     {
@@ -67,7 +68,7 @@ class WebhookReceived
     }
 
     /**
-     * Check if this event is for a specific site
+     * Check if this event is for a specific site.
      */
     public function isForSite(string $siteId): bool
     {

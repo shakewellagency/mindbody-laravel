@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -10,22 +9,24 @@ use Illuminate\Queue\SerializesModels;
 use Shakewell\MindbodyLaravel\Exceptions\MindbodyApiException;
 
 /**
- * Event fired when an API call fails
+ * Event fired when an API call fails.
  */
 class ApiCallFailed
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public MindbodyApiException $exception;
-    
+
     public string $endpoint;
-    
+
     public string $method;
-    
+
     public array $parameters;
 
     /**
-     * Create a new event instance
+     * Create a new event instance.
      */
     public function __construct(
         MindbodyApiException $exception,
@@ -40,7 +41,7 @@ class ApiCallFailed
     }
 
     /**
-     * Get the error message
+     * Get the error message.
      */
     public function getErrorMessage(): string
     {
@@ -48,7 +49,7 @@ class ApiCallFailed
     }
 
     /**
-     * Get the HTTP status code
+     * Get the HTTP status code.
      */
     public function getStatusCode(): ?int
     {
@@ -56,7 +57,7 @@ class ApiCallFailed
     }
 
     /**
-     * Check if this is a rate limit error
+     * Check if this is a rate limit error.
      */
     public function isRateLimitError(): bool
     {
@@ -64,7 +65,7 @@ class ApiCallFailed
     }
 
     /**
-     * Check if this is a client error (4xx)
+     * Check if this is a client error (4xx).
      */
     public function isClientError(): bool
     {
@@ -72,7 +73,7 @@ class ApiCallFailed
     }
 
     /**
-     * Check if this is a server error (5xx)
+     * Check if this is a server error (5xx).
      */
     public function isServerError(): bool
     {
@@ -80,7 +81,7 @@ class ApiCallFailed
     }
 
     /**
-     * Get the API error details
+     * Get the API error details.
      */
     public function getApiError(): ?array
     {

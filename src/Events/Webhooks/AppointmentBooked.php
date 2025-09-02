@@ -1,19 +1,18 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Events\Webhooks;
 
 use Carbon\Carbon;
 use Shakewell\MindbodyLaravel\Events\WebhookReceived;
 
 /**
- * Event fired when an appointment is booked
+ * Event fired when an appointment is booked.
  */
 class AppointmentBooked extends WebhookReceived
 {
     /**
-     * Get the appointment data from the event
+     * Get the appointment data from the event.
      */
     public function getAppointment(): array
     {
@@ -21,7 +20,7 @@ class AppointmentBooked extends WebhookReceived
     }
 
     /**
-     * Get the appointment ID
+     * Get the appointment ID.
      */
     public function getAppointmentId(): ?int
     {
@@ -29,7 +28,7 @@ class AppointmentBooked extends WebhookReceived
     }
 
     /**
-     * Get the client ID
+     * Get the client ID.
      */
     public function getClientId(): ?string
     {
@@ -37,7 +36,7 @@ class AppointmentBooked extends WebhookReceived
     }
 
     /**
-     * Get the staff ID
+     * Get the staff ID.
      */
     public function getStaffId(): ?int
     {
@@ -45,25 +44,27 @@ class AppointmentBooked extends WebhookReceived
     }
 
     /**
-     * Get the appointment start time
+     * Get the appointment start time.
      */
     public function getStartTime(): ?Carbon
     {
         $startDateTime = $this->getAppointment()['StartDateTime'] ?? null;
+
         return $startDateTime ? Carbon::parse($startDateTime) : null;
     }
 
     /**
-     * Get the appointment end time
+     * Get the appointment end time.
      */
     public function getEndTime(): ?Carbon
     {
         $endDateTime = $this->getAppointment()['EndDateTime'] ?? null;
+
         return $endDateTime ? Carbon::parse($endDateTime) : null;
     }
 
     /**
-     * Get the service/session type
+     * Get the service/session type.
      */
     public function getSessionType(): array
     {
@@ -71,7 +72,7 @@ class AppointmentBooked extends WebhookReceived
     }
 
     /**
-     * Get the appointment status
+     * Get the appointment status.
      */
     public function getStatus(): ?string
     {
@@ -79,7 +80,7 @@ class AppointmentBooked extends WebhookReceived
     }
 
     /**
-     * Get the location ID
+     * Get the location ID.
      */
     public function getLocationId(): ?int
     {

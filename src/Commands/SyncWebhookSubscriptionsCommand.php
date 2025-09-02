@@ -1,19 +1,17 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Commands;
 
 use Illuminate\Console\Command;
 use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookSubscriptionManager;
-use Shakewell\MindbodyLaravel\Exceptions\WebhookException;
 
 /**
- * Command to synchronize webhook subscriptions with configuration
+ * Command to synchronize webhook subscriptions with configuration.
  */
 class SyncWebhookSubscriptionsCommand extends Command
 {
-    protected $signature = 'mindbody:sync-webhooks 
+    protected $signature = 'mindbody:sync-webhooks
                            {--dry-run : Show what would be changed without making changes}
                            {--force : Force sync without confirmation}';
 
@@ -41,13 +39,15 @@ class SyncWebhookSubscriptionsCommand extends Command
         $configuredEvents = $this->getConfiguredEvents();
         if (empty($configuredEvents)) {
             $this->warn('No events configured in mindbody.webhooks.events - nothing to sync');
+
             return Command::SUCCESS;
         }
 
         // Get webhook URL
         $webhookUrl = $this->getWebhookUrl();
-        if (!$webhookUrl) {
+        if (! $webhookUrl) {
             $this->error('❌ No webhook URL configured');
+
             return Command::FAILURE;
         }
 
@@ -55,7 +55,8 @@ class SyncWebhookSubscriptionsCommand extends Command
         try {
             $currentSubscriptions = $this->subscriptionManager->getSubscriptions();
         } catch (\Exception $e) {
-            $this->error("Failed to retrieve current subscriptions: " . $e->getMessage());
+            $this->error('Failed to retrieve current subscriptions: '.$e->getMessage());
+
             return Command::FAILURE;
         }
 
@@ -68,12 +69,14 @@ class SyncWebhookSubscriptionsCommand extends Command
         // Check if any changes are needed
         if (empty($analysis['toAdd']) && empty($analysis['toRemove']) && empty($analysis['toUpdate'])) {
             $this->info('✅ Subscriptions are already in sync');
+
             return Command::SUCCESS;
         }
 
         // Confirm changes
-        if (!$this->option('dry-run') && !$this->confirmSync($analysis)) {
+        if (! $this->option('dry-run') && ! $this->confirmSync($analysis)) {
             $this->info('Synchronization cancelled');
+
             return Command::SUCCESS;
         }
 
@@ -89,13 +92,13 @@ class SyncWebhookSubscriptionsCommand extends Command
     protected function getWebhookUrl(): ?string
     {
         $url = config('mindbody.webhooks.url');
-        
-        if (!$url) {
+
+        if (! $url) {
             // Try to generate from app URL
             $appUrl = config('app.url');
             if ($appUrl) {
                 $routePrefix = config('mindbody.webhooks.route_prefix', 'mindbody/webhooks');
-                $url = rtrim($appUrl, '/') . '/' . ltrim($routePrefix, '/');
+                $url = rtrim($appUrl, '/').'/'.ltrim($routePrefix, '/');
             }
         }
 
@@ -116,7 +119,7 @@ class SyncWebhookSubscriptionsCommand extends Command
 
         // Find events to add
         foreach ($configuredEvents as $eventType) {
-            if (!isset($currentEventMap[$eventType])) {
+            if (! isset($currentEventMap[$eventType])) {
                 $toAdd[] = $eventType;
             } elseif ($currentEventMap[$eventType]['WebhookUrl'] !== $webhookUrl) {
                 $toUpdate[] = [
@@ -128,7 +131,7 @@ class SyncWebhookSubscriptionsCommand extends Command
 
         // Find events to remove
         foreach ($currentEventMap as $eventType => $subscription) {
-            if (!in_array($eventType, $configuredEvents)) {
+            if (! \in_array($eventType, $configuredEvents, true)) {
                 $toRemove[] = $subscription;
             }
         }
@@ -146,7 +149,7 @@ class SyncWebhookSubscriptionsCommand extends Command
         $this->info("Webhook URL: {$analysis['webhookUrl']}");
         $this->newLine();
 
-        if (!empty($analysis['toAdd'])) {
+        if (! empty($analysis['toAdd'])) {
             $this->info('Events to add:');
             foreach ($analysis['toAdd'] as $eventType) {
                 $this->line("  + {$eventType}");
@@ -154,7 +157,7 @@ class SyncWebhookSubscriptionsCommand extends Command
             $this->newLine();
         }
 
-        if (!empty($analysis['toRemove'])) {
+        if (! empty($analysis['toRemove'])) {
             $this->info('Subscriptions to remove:');
             foreach ($analysis['toRemove'] as $subscription) {
                 $this->line("  - {$subscription['EventType']} (ID: {$subscription['Id']})");
@@ -162,7 +165,7 @@ class SyncWebhookSubscriptionsCommand extends Command
             $this->newLine();
         }
 
-        if (!empty($analysis['toUpdate'])) {
+        if (! empty($analysis['toUpdate'])) {
             $this->info('Subscriptions to update:');
             foreach ($analysis['toUpdate'] as $update) {
                 $subscription = $update['subscription'];
@@ -180,11 +183,11 @@ class SyncWebhookSubscriptionsCommand extends Command
             return true;
         }
 
-        $addCount = count($analysis['toAdd']);
-        $removeCount = count($analysis['toRemove']);
-        $updateCount = count($analysis['toUpdate']);
+        $addCount = \count($analysis['toAdd']);
+        $removeCount = \count($analysis['toRemove']);
+        $updateCount = \count($analysis['toUpdate']);
 
-        $message = "Proceed with synchronization? ";
+        $message = 'Proceed with synchronization? ';
         $message .= "({$addCount} to add, {$removeCount} to remove, {$updateCount} to update)";
 
         return $this->confirm($message);
@@ -192,7 +195,7 @@ class SyncWebhookSubscriptionsCommand extends Command
 
     protected function performSync(array $analysis): int
     {
-        $totalOperations = count($analysis['toAdd']) + count($analysis['toRemove']) + count($analysis['toUpdate']);
+        $totalOperations = \count($analysis['toAdd']) + \count($analysis['toRemove']) + \count($analysis['toUpdate']);
         $successCount = 0;
         $failureCount = 0;
 
@@ -209,7 +212,7 @@ class SyncWebhookSubscriptionsCommand extends Command
                 $this->info("✅ Removed {$subscription['EventType']} (ID: {$subscription['Id']})");
                 $successCount++;
             } catch (\Exception $e) {
-                $this->error("❌ Failed to remove {$subscription['EventType']}: " . $e->getMessage());
+                $this->error("❌ Failed to remove {$subscription['EventType']}: ".$e->getMessage());
                 $failureCount++;
             }
         }
@@ -227,7 +230,7 @@ class SyncWebhookSubscriptionsCommand extends Command
                 $this->info("✅ Added {$eventType} (ID: {$subscription['Id']})");
                 $successCount++;
             } catch (\Exception $e) {
-                $this->error("❌ Failed to add {$eventType}: " . $e->getMessage());
+                $this->error("❌ Failed to add {$eventType}: ".$e->getMessage());
                 $failureCount++;
             }
         }
@@ -248,21 +251,22 @@ class SyncWebhookSubscriptionsCommand extends Command
                 // Remove old subscription and create new one
                 $this->subscriptionManager->unsubscribe($subscriptionId);
                 $newSubscription = $this->subscriptionManager->subscribe($eventType, $update['newUrl']);
-                
+
                 $this->info("✅ Updated {$eventType} (New ID: {$newSubscription['Id']})");
                 $successCount++;
             } catch (\Exception $e) {
-                $this->error("❌ Failed to update {$eventType}: " . $e->getMessage());
+                $this->error("❌ Failed to update {$eventType}: ".$e->getMessage());
                 $failureCount++;
             }
         }
 
         $this->newLine();
-        $this->info("Synchronization complete:");
+        $this->info('Synchronization complete:');
         $this->line("  ✅ Successful: {$successCount}/{$totalOperations}");
-        
+
         if ($failureCount > 0) {
             $this->line("  ❌ Failed: {$failureCount}/{$totalOperations}");
+
             return Command::FAILURE;
         }
 

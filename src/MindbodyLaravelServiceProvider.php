@@ -1,13 +1,9 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel;
 
 use Illuminate\Support\Facades\Route;
-use Spatie\LaravelPackageTools\Commands\InstallCommand;
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Shakewell\MindbodyLaravel\Commands\CleanupWebhookEventsCommand;
 use Shakewell\MindbodyLaravel\Commands\ListWebhookSubscriptionsCommand;
 use Shakewell\MindbodyLaravel\Commands\ProcessWebhookEventsCommand;
@@ -20,6 +16,9 @@ use Shakewell\MindbodyLaravel\Http\Middleware\VerifyWebhookSignature;
 use Shakewell\MindbodyLaravel\Services\MindbodyClient;
 use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookHandler;
 use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookSubscriptionManager;
+use Spatie\LaravelPackageTools\Commands\InstallCommand;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class MindbodyLaravelServiceProvider extends PackageServiceProvider
 {
@@ -41,7 +40,7 @@ class MindbodyLaravelServiceProvider extends PackageServiceProvider
                 ProcessWebhookEventsCommand::class,
                 CleanupWebhookEventsCommand::class,
             ])
-            ->hasInstallCommand(function (InstallCommand $command) {
+            ->hasInstallCommand(static function (InstallCommand $command) {
                 $command
                     ->publishConfigFile()
                     ->publishMigrations()
@@ -53,20 +52,23 @@ class MindbodyLaravelServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         // Register the main client as singleton
-        $this->app->singleton(MindbodyClient::class, function ($app) {
+        $this->app->singleton(MindbodyClient::class, static function ($app) {
             $config = $app['config']['mindbody'] ?? [];
+
             return new MindbodyClient($config);
         });
 
         // Register webhook handler
-        $this->app->singleton(WebhookHandler::class, function ($app) {
+        $this->app->singleton(WebhookHandler::class, static function ($app) {
             $config = $app['config']['mindbody'] ?? [];
+
             return new WebhookHandler($config);
         });
 
         // Register webhook subscription manager
-        $this->app->singleton(WebhookSubscriptionManager::class, function ($app) {
+        $this->app->singleton(WebhookSubscriptionManager::class, static function ($app) {
             $config = $app['config']['mindbody'] ?? [];
+
             return new WebhookSubscriptionManager($config);
         });
 
@@ -95,11 +97,26 @@ class MindbodyLaravelServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * Register webhook routes
+     * Get the services provided by the provider.
+     */
+    public function provides(): array
+    {
+        return [
+            MindbodyClient::class,
+            WebhookHandler::class,
+            WebhookSubscriptionManager::class,
+            'mindbody',
+            'mindbody.webhooks',
+            'mindbody.webhook-manager',
+        ];
+    }
+
+    /**
+     * Register webhook routes.
      */
     protected function registerWebhookRoutes(): void
     {
-        if (!config('mindbody.webhooks.enabled', true)) {
+        if (! config('mindbody.webhooks.enabled', true)) {
             return;
         }
 
@@ -107,7 +124,7 @@ class MindbodyLaravelServiceProvider extends PackageServiceProvider
             'prefix' => config('mindbody.webhooks.route_prefix', 'mindbody/webhooks'),
             'middleware' => ['api'],
             'as' => 'mindbody.webhooks.',
-        ], function () {
+        ], static function () {
             // Main webhook endpoint
             Route::post('/', [WebhookController::class, 'handle'])
                 ->middleware('mindbody.webhook')
@@ -132,7 +149,7 @@ class MindbodyLaravelServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * Register model observers
+     * Register model observers.
      */
     protected function registerObservers(): void
     {
@@ -140,26 +157,11 @@ class MindbodyLaravelServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * Register event listeners
+     * Register event listeners.
      */
     protected function registerEventListeners(): void
     {
         // Default event listeners are registered via EventServiceProvider
         // This method can be used for package-specific listeners
-    }
-
-    /**
-     * Get the services provided by the provider
-     */
-    public function provides(): array
-    {
-        return [
-            MindbodyClient::class,
-            WebhookHandler::class,
-            WebhookSubscriptionManager::class,
-            'mindbody',
-            'mindbody.webhooks',
-            'mindbody.webhook-manager',
-        ];
     }
 }

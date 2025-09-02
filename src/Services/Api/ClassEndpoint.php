@@ -1,43 +1,42 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 use Carbon\Carbon;
 
 /**
- * Class endpoint for managing classes and class schedules
+ * Class endpoint for managing classes and class schedules.
  */
 class ClassEndpoint extends BaseEndpoint
 {
     protected string $endpoint = 'class';
 
     /**
-     * Get all classes with optional filtering
+     * Get all classes with optional filtering.
      */
     public function all(array $params = []): array
     {
         $params = $this->prepareClassParams($params);
-        
+
         $response = $this->client->get('class/classes', $params);
-        
+
         $classes = $this->extractResultsFromResponse($response);
-        
+
         return $this->transformRecords($classes);
     }
 
     /**
-     * Find a specific class by ID
+     * Find a specific class by ID.
      */
     public function find(int $classId): ?array
     {
         $response = $this->client->get('class/classes', [
-            'ClassIds' => [$classId]
+            'ClassIds' => [$classId],
         ]);
 
         $classes = $this->extractResultsFromResponse($response);
-        
+
         if (empty($classes)) {
             return null;
         }
@@ -46,7 +45,7 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Find classes by multiple IDs
+     * Find classes by multiple IDs.
      */
     public function findMany(array $classIds): array
     {
@@ -55,16 +54,16 @@ class ClassEndpoint extends BaseEndpoint
         }
 
         $response = $this->client->get('class/classes', [
-            'ClassIds' => $classIds
+            'ClassIds' => $classIds,
         ]);
 
         $classes = $this->extractResultsFromResponse($response);
-        
+
         return $this->transformRecords($classes);
     }
 
     /**
-     * Get classes for a specific date range
+     * Get classes for a specific date range.
      */
     public function forDateRange(Carbon $startDate, Carbon $endDate, array $params = []): array
     {
@@ -77,74 +76,75 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get today's classes
+     * Get today's classes.
      */
     public function today(array $params = []): array
     {
         $today = Carbon::today();
+
         return $this->forDateRange($today, $today->copy()->endOfDay(), $params);
     }
 
     /**
-     * Get this week's classes
+     * Get this week's classes.
      */
     public function thisWeek(array $params = []): array
     {
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
-        
+
         return $this->forDateRange($startOfWeek, $endOfWeek, $params);
     }
 
     /**
-     * Get next week's classes
+     * Get next week's classes.
      */
     public function nextWeek(array $params = []): array
     {
         $startOfNextWeek = Carbon::now()->addWeek()->startOfWeek();
         $endOfNextWeek = Carbon::now()->addWeek()->endOfWeek();
-        
+
         return $this->forDateRange($startOfNextWeek, $endOfNextWeek, $params);
     }
 
     /**
-     * Get class descriptions/types
+     * Get class descriptions/types.
      */
     public function descriptions(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $results = $this->getAll('class/classdescriptions', $params);
-        
+
         return $this->transformRecords($results);
     }
 
     /**
-     * Get class schedules (recurring schedule templates)
+     * Get class schedules (recurring schedule templates).
      */
     public function schedules(array $params = []): array
     {
         $params = $this->prepareScheduleParams($params);
-        
+
         $response = $this->client->get('class/classschedules', $params);
-        
+
         return $response['ClassSchedules'] ?? [];
     }
 
     /**
-     * Get waitlist entries for classes
+     * Get waitlist entries for classes.
      */
     public function waitlist(int $classId): array
     {
         $response = $this->client->get('class/waitlistentries', [
-            'ClassIds' => [$classId]
+            'ClassIds' => [$classId],
         ]);
 
         return $response['WaitlistEntries'] ?? [];
     }
 
     /**
-     * Add a client to a class
+     * Add a client to a class.
      */
     public function addClient(string $clientId, int $classId, array $options = []): array
     {
@@ -158,14 +158,14 @@ class ClassEndpoint extends BaseEndpoint
         ], $options);
 
         $response = $this->client->post('class/addclienttoclass', $data);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Remove a client from a class
+     * Remove a client from a class.
      */
     public function removeClient(string $clientId, int $classId, array $options = []): array
     {
@@ -177,14 +177,14 @@ class ClassEndpoint extends BaseEndpoint
         ], $options);
 
         $response = $this->client->post('class/removeclientfromclass', $data);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Substitute a class teacher/instructor
+     * Substitute a class teacher/instructor.
      */
     public function substituteInstructor(int $classId, int $originalStaffId, int $substituteStaffId): array
     {
@@ -193,14 +193,14 @@ class ClassEndpoint extends BaseEndpoint
             'OriginalTeacherId' => $originalStaffId,
             'SubstituteTeacherId' => $substituteStaffId,
         ]);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Cancel a class
+     * Cancel a class.
      */
     public function cancel(int $classId, string $reason = '', bool $sendClientEmail = true): array
     {
@@ -209,14 +209,14 @@ class ClassEndpoint extends BaseEndpoint
             'CancelReason' => $reason,
             'SendClientEmail' => $sendClientEmail,
         ]);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Get class visits (who attended)
+     * Get class visits (who attended).
      */
     public function visits(int $classId): array
     {
@@ -228,13 +228,13 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get clients enrolled in a class
+     * Get clients enrolled in a class.
      */
     public function enrolledClients(int $classId): array
     {
         $class = $this->find($classId);
-        
-        if (!$class) {
+
+        if (! $class) {
             return [];
         }
 
@@ -242,13 +242,13 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Check class availability
+     * Check class availability.
      */
     public function checkAvailability(int $classId): array
     {
         $class = $this->find($classId);
-        
-        if (!$class) {
+
+        if (! $class) {
             return [
                 'available' => false,
                 'reason' => 'Class not found',
@@ -260,11 +260,11 @@ class ClassEndpoint extends BaseEndpoint
         $webBookings = $class['WebCapacity'] ?? 0;
         $totalWebBookings = $class['TotalWebBookings'] ?? 0;
 
-        $hasGeneralCapacity = $maxCapacity == 0 || $totalBookings < $maxCapacity;
-        $hasWebCapacity = $webBookings == 0 || $totalWebBookings < $webBookings;
-        
+        $hasGeneralCapacity = 0 === $maxCapacity || $totalBookings < $maxCapacity;
+        $hasWebCapacity = 0 === $webBookings || $totalWebBookings < $webBookings;
+
         $isAvailable = $hasGeneralCapacity && $hasWebCapacity;
-        
+
         return [
             'available' => $isAvailable,
             'max_capacity' => $maxCapacity,
@@ -277,7 +277,7 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Search classes by various criteria
+     * Search classes by various criteria.
      */
     public function search(array $criteria = []): array
     {
@@ -315,48 +315,52 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get classes by instructor
+     * Get classes by instructor.
      */
     public function byInstructor(int $staffId, array $params = []): array
     {
         $params['StaffIds'] = [$staffId];
+
         return $this->all($params);
     }
 
     /**
-     * Get classes by program
+     * Get classes by program.
      */
     public function byProgram(int $programId, array $params = []): array
     {
         $params['ProgramIds'] = [$programId];
+
         return $this->all($params);
     }
 
     /**
-     * Get classes by location
+     * Get classes by location.
      */
     public function byLocation(int $locationId, array $params = []): array
     {
         $params['LocationIds'] = [$locationId];
+
         return $this->all($params);
     }
 
     /**
-     * Get classes by description/type
+     * Get classes by description/type.
      */
     public function byDescription(int $classDescriptionId, array $params = []): array
     {
         $params['ClassDescriptionIds'] = [$classDescriptionId];
+
         return $this->all($params);
     }
 
     /**
-     * Book multiple clients into a class
+     * Book multiple clients into a class.
      */
     public function addMultipleClients(int $classId, array $clientIds, array $options = []): array
     {
         $results = [];
-        
+
         foreach ($clientIds as $clientId) {
             try {
                 $results[$clientId] = $this->addClient($clientId, $classId, $options);
@@ -372,7 +376,7 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Extract results from API response
+     * Extract results from API response.
      */
     protected function extractResultsFromResponse(array $response): array
     {
@@ -380,16 +384,16 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Prepare class-specific parameters
+     * Prepare class-specific parameters.
      */
     protected function prepareClassParams(array $params): array
     {
         // Set default date range if not provided
-        if (!isset($params['StartDateTime']) && !isset($params['start_date'])) {
+        if (! isset($params['StartDateTime']) && ! isset($params['start_date'])) {
             $params['StartDateTime'] = Carbon::now()->toIso8601String();
         }
 
-        if (!isset($params['EndDateTime']) && !isset($params['end_date'])) {
+        if (! isset($params['EndDateTime']) && ! isset($params['end_date'])) {
             $params['EndDateTime'] = Carbon::now()->addDays(7)->toIso8601String();
         }
 
@@ -407,7 +411,7 @@ class ClassEndpoint extends BaseEndpoint
         // Handle array parameters
         $arrayParams = ['StaffIds', 'ProgramIds', 'LocationIds', 'ClassDescriptionIds', 'ClassIds', 'Levels'];
         foreach ($arrayParams as $param) {
-            if (isset($params[$param]) && !is_array($params[$param])) {
+            if (isset($params[$param]) && ! \is_array($params[$param])) {
                 $params[$param] = [$params[$param]];
             }
         }
@@ -416,16 +420,16 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Prepare schedule-specific parameters
+     * Prepare schedule-specific parameters.
      */
     protected function prepareScheduleParams(array $params): array
     {
         // Set default date range if not provided
-        if (!isset($params['StartDate'])) {
+        if (! isset($params['StartDate'])) {
             $params['StartDate'] = Carbon::now()->format('Y-m-d');
         }
 
-        if (!isset($params['EndDate'])) {
+        if (! isset($params['EndDate'])) {
             $params['EndDate'] = Carbon::now()->addMonths(1)->format('Y-m-d');
         }
 
@@ -444,7 +448,7 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get date fields specific to classes
+     * Get date fields specific to classes.
      */
     protected function getDateFields(): array
     {
@@ -458,7 +462,7 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Process bulk class operations
+     * Process bulk class operations.
      */
     protected function processBulkBatch(string $operation, array $batch): array
     {
@@ -473,14 +477,14 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk add clients to classes
+     * Bulk add clients to classes.
      */
     protected function bulkAddClients(array $operations): array
     {
         $results = [];
-        
+
         foreach ($operations as $operation) {
-            if (!isset($operation['client_id'], $operation['class_id'])) {
+            if (! isset($operation['client_id'], $operation['class_id'])) {
                 $results[] = [
                     'success' => false,
                     'error' => 'client_id and class_id are required',
@@ -508,14 +512,14 @@ class ClassEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk remove clients from classes
+     * Bulk remove clients from classes.
      */
     protected function bulkRemoveClients(array $operations): array
     {
         $results = [];
-        
+
         foreach ($operations as $operation) {
-            if (!isset($operation['client_id'], $operation['class_id'])) {
+            if (! isset($operation['client_id'], $operation['class_id'])) {
                 $results[] = [
                     'success' => false,
                     'error' => 'client_id and class_id are required',

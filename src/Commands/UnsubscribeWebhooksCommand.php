@@ -1,19 +1,18 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Commands;
 
 use Illuminate\Console\Command;
-use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookSubscriptionManager;
 use Shakewell\MindbodyLaravel\Exceptions\WebhookException;
+use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookSubscriptionManager;
 
 /**
- * Command to unsubscribe from Mindbody webhooks
+ * Command to unsubscribe from Mindbody webhooks.
  */
 class UnsubscribeWebhooksCommand extends Command
 {
-    protected $signature = 'mindbody:unsubscribe-webhooks 
+    protected $signature = 'mindbody:unsubscribe-webhooks
                            {--id=* : Specific subscription IDs to unsubscribe from}
                            {--event=* : Unsubscribe from specific event types}
                            {--all : Unsubscribe from all events}
@@ -43,20 +42,23 @@ class UnsubscribeWebhooksCommand extends Command
         try {
             $subscriptions = $this->subscriptionManager->getSubscriptions();
         } catch (\Exception $e) {
-            $this->error("Failed to retrieve current subscriptions: " . $e->getMessage());
+            $this->error('Failed to retrieve current subscriptions: '.$e->getMessage());
+
             return Command::FAILURE;
         }
 
         if (empty($subscriptions)) {
             $this->info('No active webhook subscriptions found');
+
             return Command::SUCCESS;
         }
 
         // Determine what to unsubscribe from
         $toUnsubscribe = $this->getSubscriptionsToRemove($subscriptions);
-        
+
         if (empty($toUnsubscribe)) {
             $this->info('No subscriptions match the specified criteria');
+
             return Command::SUCCESS;
         }
 
@@ -64,8 +66,9 @@ class UnsubscribeWebhooksCommand extends Command
         $this->displaySubscriptionsToRemove($toUnsubscribe);
 
         // Confirm unsubscription
-        if (!$this->option('dry-run') && !$this->confirmUnsubscription($toUnsubscribe)) {
+        if (! $this->option('dry-run') && ! $this->confirmUnsubscription($toUnsubscribe)) {
             $this->info('Unsubscription cancelled');
+
             return Command::SUCCESS;
         }
 
@@ -93,12 +96,12 @@ class UnsubscribeWebhooksCommand extends Command
             $shouldRemove = false;
 
             // Check if ID matches
-            if (!empty($specificIds) && in_array($subscription['Id'], $specificIds)) {
+            if (! empty($specificIds) && \in_array($subscription['Id'], $specificIds, true)) {
                 $shouldRemove = true;
             }
 
             // Check if event type matches
-            if (!empty($specificEvents) && in_array($subscription['EventType'], $specificEvents)) {
+            if (! empty($specificEvents) && \in_array($subscription['EventType'], $specificEvents, true)) {
                 $shouldRemove = true;
             }
 
@@ -124,10 +127,10 @@ class UnsubscribeWebhooksCommand extends Command
             $eventType = $subscription['EventType'];
             $url = $subscription['WebhookUrl'] ?? 'N/A';
             $status = $subscription['Status'] ?? 'Active';
-            
+
             $choice = "{$eventType} (ID: {$id}) - {$status}";
             $choices[$index] = $choice;
-            
+
             $this->line("  [{$index}] {$choice}");
             $this->line("      URL: {$url}");
         }
@@ -136,17 +139,17 @@ class UnsubscribeWebhooksCommand extends Command
 
         if ($this->confirm('Select specific subscriptions to remove?')) {
             $selected = $this->ask('Enter subscription numbers separated by commas (e.g., 0,1,2)');
-            
+
             if ($selected) {
                 $indices = array_map('trim', explode(',', $selected));
                 $toRemove = [];
-                
+
                 foreach ($indices as $index) {
                     if (isset($subscriptions[$index])) {
                         $toRemove[] = $subscriptions[$index];
                     }
                 }
-                
+
                 return $toRemove;
             }
         }
@@ -157,16 +160,16 @@ class UnsubscribeWebhooksCommand extends Command
     protected function displaySubscriptionsToRemove(array $subscriptions): void
     {
         $this->info('Subscriptions to remove:');
-        
+
         foreach ($subscriptions as $subscription) {
             $id = $subscription['Id'];
             $eventType = $subscription['EventType'];
             $url = $subscription['WebhookUrl'] ?? 'N/A';
-            
+
             $this->line("  • {$eventType} (ID: {$id})");
             $this->line("    URL: {$url}");
         }
-        
+
         $this->newLine();
     }
 
@@ -176,7 +179,8 @@ class UnsubscribeWebhooksCommand extends Command
             return true;
         }
 
-        $count = count($subscriptions);
+        $count = \count($subscriptions);
+
         return $this->confirm("Remove {$count} webhook subscription(s)?");
     }
 
@@ -197,25 +201,25 @@ class UnsubscribeWebhooksCommand extends Command
 
             try {
                 $this->subscriptionManager->unsubscribe($id);
-                
+
                 $this->info("✅ Unsubscribed from {$eventType} (ID: {$id})");
                 $successCount++;
-                
             } catch (WebhookException $e) {
-                $this->error("❌ Failed to unsubscribe from {$eventType}: " . $e->getMessage());
+                $this->error("❌ Failed to unsubscribe from {$eventType}: ".$e->getMessage());
                 $failureCount++;
             } catch (\Exception $e) {
-                $this->error("❌ Error unsubscribing from {$eventType}: " . $e->getMessage());
+                $this->error("❌ Error unsubscribing from {$eventType}: ".$e->getMessage());
                 $failureCount++;
             }
         }
 
         $this->newLine();
-        $this->info("Unsubscription complete:");
+        $this->info('Unsubscription complete:');
         $this->line("  ✅ Successful: {$successCount}");
-        
+
         if ($failureCount > 0) {
             $this->line("  ❌ Failed: {$failureCount}");
+
             return Command::FAILURE;
         }
 

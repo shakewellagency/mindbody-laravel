@@ -1,39 +1,38 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 /**
- * Site endpoint for managing site information, locations, programs, and resources
+ * Site endpoint for managing site information, locations, programs, and resources.
  */
 class SiteEndpoint extends BaseEndpoint
 {
     protected string $endpoint = 'site';
 
     /**
-     * Get all sites accessible to the current API key
+     * Get all sites accessible to the current API key.
      */
     public function all(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $results = $this->getAll('site/sites', $params);
-        
+
         return $this->transformRecords($results);
     }
 
     /**
-     * Find a specific site by ID
+     * Find a specific site by ID.
      */
     public function find(int $siteId): ?array
     {
         $response = $this->client->get('site/sites', [
-            'SiteIds' => [$siteId]
+            'SiteIds' => [$siteId],
         ]);
 
         $sites = $this->extractResultsFromResponse($response);
-        
+
         if (empty($sites)) {
             return null;
         }
@@ -42,44 +41,44 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get current site information
+     * Get current site information.
      */
     public function current(): array
     {
         $siteId = $this->client->getConfig('api.site_id');
-        
-        if (!$siteId) {
+
+        if (! $siteId) {
             throw new \InvalidArgumentException('Site ID not configured');
         }
 
         $site = $this->find((int) $siteId);
-        
+
         return $site ?? [];
     }
 
     /**
-     * Get all locations for the site
+     * Get all locations for the site.
      */
     public function locations(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $response = $this->client->get('site/locations', $params);
-        
+
         return $response['Locations'] ?? [];
     }
 
     /**
-     * Find a specific location by ID
+     * Find a specific location by ID.
      */
     public function findLocation(int $locationId): ?array
     {
         $response = $this->client->get('site/locations', [
-            'LocationIds' => [$locationId]
+            'LocationIds' => [$locationId],
         ]);
 
         $locations = $response['Locations'] ?? [];
-        
+
         if (empty($locations)) {
             return null;
         }
@@ -88,7 +87,7 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get locations by various criteria
+     * Get locations by various criteria.
      */
     public function searchLocations(array $criteria = []): array
     {
@@ -97,14 +96,16 @@ class SiteEndpoint extends BaseEndpoint
         if (isset($criteria['name'])) {
             // Note: API may not support name filtering directly
             $allLocations = $this->locations();
-            return array_filter($allLocations, function ($location) use ($criteria) {
-                return stripos($location['Name'] ?? '', $criteria['name']) !== false;
+
+            return array_filter($allLocations, static function ($location) use ($criteria) {
+                return false !== stripos($location['Name'] ?? '', $criteria['name']);
             });
         }
 
         if (isset($criteria['is_active'])) {
             $allLocations = $this->locations();
-            return array_filter($allLocations, function ($location) use ($criteria) {
+
+            return array_filter($allLocations, static function ($location) use ($criteria) {
                 return ($location['Active'] ?? true) === $criteria['is_active'];
             });
         }
@@ -113,7 +114,7 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get active locations only
+     * Get active locations only.
      */
     public function activeLocations(): array
     {
@@ -121,28 +122,28 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get all programs
+     * Get all programs.
      */
     public function programs(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $response = $this->client->get('site/programs', $params);
-        
+
         return $response['Programs'] ?? [];
     }
 
     /**
-     * Find a specific program by ID
+     * Find a specific program by ID.
      */
     public function findProgram(int $programId): ?array
     {
         $response = $this->client->get('site/programs', [
-            'ProgramIds' => [$programId]
+            'ProgramIds' => [$programId],
         ]);
 
         $programs = $response['Programs'] ?? [];
-        
+
         if (empty($programs)) {
             return null;
         }
@@ -151,28 +152,28 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get session types (services offered)
+     * Get session types (services offered).
      */
     public function sessionTypes(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $response = $this->client->get('site/sessiontypes', $params);
-        
+
         return $response['SessionTypes'] ?? [];
     }
 
     /**
-     * Find a specific session type by ID
+     * Find a specific session type by ID.
      */
     public function findSessionType(int $sessionTypeId): ?array
     {
         $response = $this->client->get('site/sessiontypes', [
-            'SessionTypeIds' => [$sessionTypeId]
+            'SessionTypeIds' => [$sessionTypeId],
         ]);
 
         $sessionTypes = $response['SessionTypes'] ?? [];
-        
+
         if (empty($sessionTypes)) {
             return null;
         }
@@ -181,40 +182,40 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get session types by program
+     * Get session types by program.
      */
     public function sessionTypesByProgram(int $programId): array
     {
         $response = $this->client->get('site/sessiontypes', [
-            'ProgramIds' => [$programId]
+            'ProgramIds' => [$programId],
         ]);
 
         return $response['SessionTypes'] ?? [];
     }
 
     /**
-     * Get resources (rooms, equipment, etc.)
+     * Get resources (rooms, equipment, etc.).
      */
     public function resources(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $response = $this->client->get('site/resources', $params);
-        
+
         return $response['Resources'] ?? [];
     }
 
     /**
-     * Find a specific resource by ID
+     * Find a specific resource by ID.
      */
     public function findResource(int $resourceId): ?array
     {
         $response = $this->client->get('site/resources', [
-            'ResourceIds' => [$resourceId]
+            'ResourceIds' => [$resourceId],
         ]);
 
         $resources = $response['Resources'] ?? [];
-        
+
         if (empty($resources)) {
             return null;
         }
@@ -223,7 +224,7 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get resources by location
+     * Get resources by location.
      */
     public function resourcesByLocation(int $locationId): array
     {
@@ -235,45 +236,43 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get activation code (for mobile apps or integrations)
+     * Get activation code (for mobile apps or integrations).
      */
     public function activationCode(): array
     {
-        $response = $this->client->get('site/activationcode');
-        
-        return $response;
+        return $this->client->get('site/activationcode');
     }
 
     /**
-     * Get site membership plans/types
+     * Get site membership plans/types.
      */
     public function membershipTypes(array $params = []): array
     {
         // This typically comes from the sale/services endpoint
         $services = $this->client->sale->services($params);
-        
+
         // Filter for membership types
-        return array_filter($services, function ($service) {
+        return array_filter($services, static function ($service) {
             return ($service['Type'] ?? '') === 'Membership';
         });
     }
 
     /**
-     * Get site package types
+     * Get site package types.
      */
     public function packageTypes(array $params = []): array
     {
         // This typically comes from the sale/services endpoint
         $services = $this->client->sale->services($params);
-        
+
         // Filter for package types
-        return array_filter($services, function ($service) {
+        return array_filter($services, static function ($service) {
             return ($service['Type'] ?? '') === 'Package';
         });
     }
 
     /**
-     * Get class descriptions/types offered by the site
+     * Get class descriptions/types offered by the site.
      */
     public function classDescriptions(array $params = []): array
     {
@@ -281,14 +280,14 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get site policies and settings
+     * Get site policies and settings.
      */
     public function policies(): array
     {
         // This information is typically embedded in other responses
         // or requires specific endpoints that may not be publicly available
         $siteInfo = $this->current();
-        
+
         return [
             'cancellation_policy' => $siteInfo['CancellationPolicy'] ?? '',
             'late_cancel_hours' => $siteInfo['LateCancelHours'] ?? 24,
@@ -302,12 +301,12 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get site contact information
+     * Get site contact information.
      */
     public function contactInfo(): array
     {
         $siteInfo = $this->current();
-        
+
         return [
             'name' => $siteInfo['Name'] ?? '',
             'description' => $siteInfo['Description'] ?? '',
@@ -322,14 +321,14 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get site business hours
+     * Get site business hours.
      */
     public function businessHours(): array
     {
         $locations = $this->locations();
-        
+
         $businessHours = [];
-        
+
         foreach ($locations as $location) {
             if (isset($location['BusinessHours'])) {
                 $businessHours[$location['Id']] = [
@@ -338,22 +337,22 @@ class SiteEndpoint extends BaseEndpoint
                 ];
             }
         }
-        
+
         return $businessHours;
     }
 
     /**
-     * Get pricing levels
+     * Get pricing levels.
      */
     public function pricingLevels(): array
     {
         $siteInfo = $this->current();
-        
+
         return $siteInfo['PricingLevels'] ?? [];
     }
 
     /**
-     * Get payment methods accepted by the site
+     * Get payment methods accepted by the site.
      */
     public function paymentMethods(): array
     {
@@ -361,7 +360,7 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get site statistics/summary
+     * Get site statistics/summary.
      */
     public function statistics(): array
     {
@@ -370,49 +369,49 @@ class SiteEndpoint extends BaseEndpoint
         $programs = $this->programs();
         $sessionTypes = $this->sessionTypes();
         $resources = $this->resources();
-        
+
         return [
-            'total_locations' => count($locations),
-            'active_locations' => count($this->activeLocations()),
-            'total_programs' => count($programs),
-            'total_session_types' => count($sessionTypes),
-            'total_resources' => count($resources),
+            'total_locations' => \count($locations),
+            'active_locations' => \count($this->activeLocations()),
+            'total_programs' => \count($programs),
+            'total_session_types' => \count($sessionTypes),
+            'total_resources' => \count($resources),
             'last_updated' => now()->toIso8601String(),
         ];
     }
 
     /**
-     * Test if site is properly configured and accessible
+     * Test if site is properly configured and accessible.
      */
     public function healthCheck(): array
     {
         $checks = [];
-        
+
         try {
             $siteInfo = $this->current();
             $checks['site_info'] = ['status' => 'ok', 'message' => 'Site information retrieved'];
         } catch (\Exception $e) {
             $checks['site_info'] = ['status' => 'error', 'message' => $e->getMessage()];
         }
-        
+
         try {
             $locations = $this->locations();
-            $checks['locations'] = ['status' => 'ok', 'count' => count($locations)];
+            $checks['locations'] = ['status' => 'ok', 'count' => \count($locations)];
         } catch (\Exception $e) {
             $checks['locations'] = ['status' => 'error', 'message' => $e->getMessage()];
         }
-        
+
         try {
             $programs = $this->programs();
-            $checks['programs'] = ['status' => 'ok', 'count' => count($programs)];
+            $checks['programs'] = ['status' => 'ok', 'count' => \count($programs)];
         } catch (\Exception $e) {
             $checks['programs'] = ['status' => 'error', 'message' => $e->getMessage()];
         }
-        
-        $overallStatus = array_reduce($checks, function ($carry, $check) {
-            return $carry && ($check['status'] === 'ok');
+
+        $overallStatus = array_reduce($checks, static function ($carry, $check) {
+            return $carry && ('ok' === $check['status']);
         }, true);
-        
+
         return [
             'overall_status' => $overallStatus ? 'healthy' : 'unhealthy',
             'timestamp' => now()->toIso8601String(),
@@ -421,7 +420,7 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Extract results from API response
+     * Extract results from API response.
      */
     protected function extractResultsFromResponse(array $response): array
     {
@@ -429,7 +428,7 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get date fields specific to sites
+     * Get date fields specific to sites.
      */
     protected function getDateFields(): array
     {
@@ -440,7 +439,7 @@ class SiteEndpoint extends BaseEndpoint
     }
 
     /**
-     * Site endpoint doesn't typically support bulk operations
+     * Site endpoint doesn't typically support bulk operations.
      */
     protected function processBulkBatch(string $operation, array $batch): array
     {

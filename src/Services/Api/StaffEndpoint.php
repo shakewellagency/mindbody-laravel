@@ -1,41 +1,40 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 use Carbon\Carbon;
 
 /**
- * Staff endpoint for managing staff members, instructors, and their schedules
+ * Staff endpoint for managing staff members, instructors, and their schedules.
  */
 class StaffEndpoint extends BaseEndpoint
 {
     protected string $endpoint = 'staff';
 
     /**
-     * Get all staff members with optional filtering
+     * Get all staff members with optional filtering.
      */
     public function all(array $params = []): array
     {
         $params = $this->prepareStaffParams($params);
-        
+
         $results = $this->getAll('staff/staff', $params);
-        
+
         return $this->transformRecords($results);
     }
 
     /**
-     * Find a specific staff member by ID
+     * Find a specific staff member by ID.
      */
     public function find(int $staffId): ?array
     {
         $response = $this->client->get('staff/staff', [
-            'StaffIds' => [$staffId]
+            'StaffIds' => [$staffId],
         ]);
 
         $staff = $this->extractResultsFromResponse($response);
-        
+
         if (empty($staff)) {
             return null;
         }
@@ -44,7 +43,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Find staff members by multiple IDs
+     * Find staff members by multiple IDs.
      */
     public function findMany(array $staffIds): array
     {
@@ -53,16 +52,16 @@ class StaffEndpoint extends BaseEndpoint
         }
 
         $response = $this->client->get('staff/staff', [
-            'StaffIds' => $staffIds
+            'StaffIds' => $staffIds,
         ]);
 
         $staff = $this->extractResultsFromResponse($response);
-        
+
         return $this->transformRecords($staff);
     }
 
     /**
-     * Search staff by various criteria
+     * Search staff by various criteria.
      */
     public function search(array $criteria = []): array
     {
@@ -89,7 +88,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get active staff members only
+     * Get active staff members only.
      */
     public function active(array $params = []): array
     {
@@ -98,38 +97,40 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get inactive staff members
+     * Get inactive staff members.
      */
     public function inactive(array $params = []): array
     {
         $params['Filters'] = ['InactiveOnly'];
+
         return $this->all($params);
     }
 
     /**
-     * Get staff by location
+     * Get staff by location.
      */
     public function byLocation(int $locationId, array $params = []): array
     {
         $params['LocationIds'] = [$locationId];
+
         return $this->all($params);
     }
 
     /**
-     * Get instructors (staff who can teach classes)
+     * Get instructors (staff who can teach classes).
      */
     public function instructors(array $params = []): array
     {
         $allStaff = $this->all($params);
-        
+
         // Filter for staff who are instructors
-        return array_filter($allStaff, function ($staff) {
+        return array_filter($allStaff, static function ($staff) {
             return ($staff['IsInstructor'] ?? false) === true;
         });
     }
 
     /**
-     * Get staff availability
+     * Get staff availability.
      */
     public function availability(int $staffId, Carbon $startDate, Carbon $endDate, array $params = []): array
     {
@@ -145,7 +146,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get staff permissions
+     * Get staff permissions.
      */
     public function permissions(int $staffId): array
     {
@@ -157,7 +158,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get staff schedule/appointments
+     * Get staff schedule/appointments.
      */
     public function schedule(int $staffId, Carbon $startDate, Carbon $endDate, array $params = []): array
     {
@@ -187,7 +188,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get staff work hours/shifts
+     * Get staff work hours/shifts.
      */
     public function workHours(int $staffId, array $params = []): array
     {
@@ -201,7 +202,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Update staff information
+     * Update staff information.
      */
     public function update(int $staffId, array $data): array
     {
@@ -211,7 +212,7 @@ class StaffEndpoint extends BaseEndpoint
         $response = $this->client->post('staff/updatestaff', [
             'Staff' => $staffData,
         ]);
-        
+
         $this->clearCache();
 
         if (isset($response['Staff'])) {
@@ -222,18 +223,18 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Add new staff member
+     * Add new staff member.
      */
     public function create(array $data): array
     {
         $this->validateRequired($data, ['FirstName', 'LastName']);
-        
+
         $staffData = $this->validateStaffData($data);
-        
+
         $response = $this->client->post('staff/addstaff', [
             'Staff' => $staffData,
         ]);
-        
+
         $this->clearCache();
 
         if (isset($response['Staff'])) {
@@ -244,7 +245,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Deactivate a staff member
+     * Deactivate a staff member.
      */
     public function deactivate(int $staffId): array
     {
@@ -252,7 +253,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Reactivate a staff member
+     * Reactivate a staff member.
      */
     public function reactivate(int $staffId): array
     {
@@ -260,13 +261,13 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get staff bio/profile information
+     * Get staff bio/profile information.
      */
     public function profile(int $staffId): array
     {
         $staff = $this->find($staffId);
-        
-        if (!$staff) {
+
+        if (! $staff) {
             return [];
         }
 
@@ -285,26 +286,27 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get staff by session type (who can provide specific services)
+     * Get staff by session type (who can provide specific services).
      */
     public function bySessionType(int $sessionTypeId, array $params = []): array
     {
         $params['SessionTypeIds'] = [$sessionTypeId];
+
         return $this->all($params);
     }
 
     /**
-     * Get staff certifications
+     * Get staff certifications.
      */
     public function certifications(int $staffId): array
     {
         $staff = $this->find($staffId);
-        
+
         return $staff['Certifications'] ?? [];
     }
 
     /**
-     * Get staff pay rates (if accessible)
+     * Get staff pay rates (if accessible).
      */
     public function payRates(int $staffId): array
     {
@@ -316,7 +318,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Set staff availability
+     * Set staff availability.
      */
     public function setAvailability(int $staffId, array $availability): array
     {
@@ -324,14 +326,14 @@ class StaffEndpoint extends BaseEndpoint
             'StaffId' => $staffId,
             'Availability' => $availability,
         ]);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Get staff time off/unavailable periods
+     * Get staff time off/unavailable periods.
      */
     public function timeOff(int $staffId, array $params = []): array
     {
@@ -345,7 +347,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Add time off for staff member
+     * Add time off for staff member.
      */
     public function addTimeOff(int $staffId, Carbon $startDate, Carbon $endDate, string $reason = ''): array
     {
@@ -355,14 +357,14 @@ class StaffEndpoint extends BaseEndpoint
             'EndDate' => $this->formatDateOnly($endDate),
             'Reason' => $reason,
         ]);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Get staff sales performance
+     * Get staff sales performance.
      */
     public function salesPerformance(int $staffId, Carbon $startDate, Carbon $endDate): array
     {
@@ -373,12 +375,12 @@ class StaffEndpoint extends BaseEndpoint
         ]);
 
         // Filter sales by staff member if that information is available
-        $staffSales = array_filter($sales, function ($sale) use ($staffId) {
-            return ($sale['StaffId'] ?? null) == $staffId;
+        $staffSales = array_filter($sales, static function ($sale) use ($staffId) {
+            return ($sale['StaffId'] ?? null) === $staffId;
         });
 
         // Calculate basic metrics
-        $totalSales = count($staffSales);
+        $totalSales = \count($staffSales);
         $totalRevenue = array_sum(array_column($staffSales, 'SaleTotal'));
 
         return [
@@ -395,7 +397,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Extract results from API response
+     * Extract results from API response.
      */
     protected function extractResultsFromResponse(array $response): array
     {
@@ -403,14 +405,14 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Prepare staff-specific parameters
+     * Prepare staff-specific parameters.
      */
     protected function prepareStaffParams(array $params): array
     {
         // Handle array parameters
         $arrayParams = ['StaffIds', 'LocationIds', 'SessionTypeIds', 'Filters'];
         foreach ($arrayParams as $param) {
-            if (isset($params[$param]) && !is_array($params[$param])) {
+            if (isset($params[$param]) && ! \is_array($params[$param])) {
                 $params[$param] = [$params[$param]];
             }
         }
@@ -419,7 +421,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Validate and prepare staff data
+     * Validate and prepare staff data.
      */
     protected function validateStaffData(array $data): array
     {
@@ -448,7 +450,7 @@ class StaffEndpoint extends BaseEndpoint
         ];
 
         foreach ($fieldMappings as $alias => $field) {
-            if (isset($data[$alias]) && !isset($data[$field])) {
+            if (isset($data[$alias]) && ! isset($data[$field])) {
                 $data[$field] = $data[$alias];
                 unset($data[$alias]);
             }
@@ -458,7 +460,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get date fields specific to staff
+     * Get date fields specific to staff.
      */
     protected function getDateFields(): array
     {
@@ -471,7 +473,7 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Process bulk staff operations
+     * Process bulk staff operations.
      */
     protected function processBulkBatch(string $operation, array $batch): array
     {
@@ -488,12 +490,12 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk create staff members
+     * Bulk create staff members.
      */
     protected function bulkCreate(array $staffMembers): array
     {
         $results = [];
-        
+
         foreach ($staffMembers as $staffData) {
             try {
                 $results[] = $this->create($staffData);
@@ -510,14 +512,14 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk update staff members
+     * Bulk update staff members.
      */
     protected function bulkUpdate(array $updates): array
     {
         $results = [];
-        
+
         foreach ($updates as $update) {
-            if (!isset($update['Id'])) {
+            if (! isset($update['Id'])) {
                 $results[] = [
                     'success' => false,
                     'error' => 'Staff ID is required for updates',
@@ -543,12 +545,12 @@ class StaffEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk deactivate staff members
+     * Bulk deactivate staff members.
      */
     protected function bulkDeactivate(array $staffIds): array
     {
         $results = [];
-        
+
         foreach ($staffIds as $staffId) {
             try {
                 $results[] = $this->deactivate($staffId);

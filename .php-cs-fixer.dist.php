@@ -118,7 +118,7 @@ return (new PhpCsFixer\Config())
         'short_scalar_cast' => true,
         'simplified_null_return' => true,
         'single_blank_line_at_eof' => true,
-        'single_blank_line_before_namespace' => true,
+        'blank_lines_before_namespace' => ['min_line_breaks' => 1, 'max_line_breaks' => 1],
         'single_class_element_per_statement' => true,
         'single_import_per_statement' => true,
         'single_line_after_imports' => true,

@@ -1,29 +1,28 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Exceptions;
 
 /**
- * Exception thrown when API rate limits are exceeded
+ * Exception thrown when API rate limits are exceeded.
  */
 class RateLimitException extends MindbodyApiException
 {
     protected ?int $retryAfter = null;
-    
+
     protected ?int $remainingRequests = null;
 
     /**
-     * Create a new rate limit exception
+     * Create a new rate limit exception.
      */
     public static function limitExceeded(
-        int $retryAfter = null,
-        int $remainingRequests = null,
+        ?int $retryAfter = null,
+        ?int $remainingRequests = null,
         string $limitType = 'requests'
     ): self {
         $message = "Rate limit exceeded for {$limitType}";
-        
-        if ($retryAfter !== null) {
+
+        if (null !== $retryAfter) {
             $message .= ". Retry after {$retryAfter} seconds";
         }
 
@@ -41,7 +40,7 @@ class RateLimitException extends MindbodyApiException
     }
 
     /**
-     * Create exception for daily limit exceeded
+     * Create exception for daily limit exceeded.
      */
     public static function dailyLimitExceeded(): self
     {
@@ -49,7 +48,7 @@ class RateLimitException extends MindbodyApiException
     }
 
     /**
-     * Create exception for per-minute limit exceeded
+     * Create exception for per-minute limit exceeded.
      */
     public static function perMinuteLimitExceeded(int $retryAfter = 60): self
     {
@@ -57,7 +56,7 @@ class RateLimitException extends MindbodyApiException
     }
 
     /**
-     * Get the number of seconds to wait before retrying
+     * Get the number of seconds to wait before retrying.
      */
     public function getRetryAfter(): ?int
     {
@@ -65,7 +64,7 @@ class RateLimitException extends MindbodyApiException
     }
 
     /**
-     * Get the number of remaining requests (if available)
+     * Get the number of remaining requests (if available).
      */
     public function getRemainingRequests(): ?int
     {
@@ -73,10 +72,10 @@ class RateLimitException extends MindbodyApiException
     }
 
     /**
-     * Check if we should retry after waiting
+     * Check if we should retry after waiting.
      */
     public function shouldRetry(): bool
     {
-        return $this->retryAfter !== null && $this->retryAfter > 0;
+        return null !== $this->retryAfter && $this->retryAfter > 0;
     }
 }

@@ -1,16 +1,15 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Exceptions;
 
 /**
- * Exception thrown when webhook validation fails
+ * Exception thrown when webhook validation fails.
  */
 class WebhookValidationException extends MindbodyException
 {
     /**
-     * Create exception for missing webhook signature
+     * Create exception for missing webhook signature.
      */
     public static function missingSignature(): self
     {
@@ -18,7 +17,7 @@ class WebhookValidationException extends MindbodyException
     }
 
     /**
-     * Create exception for invalid webhook signature
+     * Create exception for invalid webhook signature.
      */
     public static function invalidSignature(): self
     {
@@ -26,7 +25,7 @@ class WebhookValidationException extends MindbodyException
     }
 
     /**
-     * Create exception for missing signature key configuration
+     * Create exception for missing signature key configuration.
      */
     public static function missingSignatureKey(): self
     {
@@ -34,11 +33,11 @@ class WebhookValidationException extends MindbodyException
     }
 
     /**
-     * Create exception for invalid webhook payload
+     * Create exception for invalid webhook payload.
      */
     public static function invalidPayload(string $reason = ''): self
     {
-        $message = $reason 
+        $message = $reason
             ? "Invalid webhook payload: {$reason}"
             : 'Invalid webhook payload received';
 
@@ -46,7 +45,7 @@ class WebhookValidationException extends MindbodyException
     }
 
     /**
-     * Create exception for unsupported webhook event
+     * Create exception for unsupported webhook event.
      */
     public static function unsupportedEvent(string $eventType): self
     {
@@ -54,11 +53,11 @@ class WebhookValidationException extends MindbodyException
     }
 
     /**
-     * Create exception for webhook processing failure
+     * Create exception for webhook processing failure.
      */
     public static function processingFailed(string $reason = ''): self
     {
-        $message = $reason 
+        $message = $reason
             ? "Webhook processing failed: {$reason}"
             : 'Failed to process webhook event';
 

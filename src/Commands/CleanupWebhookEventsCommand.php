@@ -1,19 +1,18 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Commands;
 
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Shakewell\MindbodyLaravel\Models\WebhookEvent;
-use Carbon\Carbon;
 
 /**
- * Command to clean up old webhook events
+ * Command to clean up old webhook events.
  */
 class CleanupWebhookEventsCommand extends Command
 {
-    protected $signature = 'mindbody:cleanup-webhooks 
+    protected $signature = 'mindbody:cleanup-webhooks
                            {--days=30 : Delete events older than this many days}
                            {--status=* : Only delete events with specific status (processed|failed|all)}
                            {--batch-size=1000 : Number of records to delete per batch}
@@ -41,11 +40,13 @@ class CleanupWebhookEventsCommand extends Command
         // Validate inputs
         if ($days <= 0) {
             $this->error('Days must be greater than 0');
+
             return Command::FAILURE;
         }
 
         if ($batchSize <= 0) {
             $this->error('Batch size must be greater than 0');
+
             return Command::FAILURE;
         }
 
@@ -59,8 +60,9 @@ class CleanupWebhookEventsCommand extends Command
         // Get count of records to delete
         $totalCount = $query->count();
 
-        if ($totalCount === 0) {
+        if (0 === $totalCount) {
             $this->info('No records found matching cleanup criteria');
+
             return Command::SUCCESS;
         }
 
@@ -68,8 +70,9 @@ class CleanupWebhookEventsCommand extends Command
         $this->displayCleanupSummary($totalCount, $cutoffDate, $statuses);
 
         // Confirm deletion
-        if (!$dryRun && !$force && !$this->confirmCleanup($totalCount)) {
+        if (! $dryRun && ! $force && ! $this->confirmCleanup($totalCount)) {
             $this->info('Cleanup cancelled');
+
             return Command::SUCCESS;
         }
 
@@ -90,7 +93,7 @@ class CleanupWebhookEventsCommand extends Command
     {
         $query = WebhookEvent::where('created_at', '<', $cutoffDate);
 
-        if (!in_array('all', $statuses)) {
+        if (! \in_array('all', $statuses, true)) {
             $query->whereIn('status', $statuses);
         }
 
@@ -102,12 +105,12 @@ class CleanupWebhookEventsCommand extends Command
         $this->info('Cleanup Summary:');
         $this->line("  Records to delete: {$totalCount}");
         $this->line("  Cutoff date: {$cutoffDate->format('Y-m-d H:i:s')}");
-        $this->line("  Status filter: " . implode(', ', $statuses));
+        $this->line('  Status filter: '.implode(', ', $statuses));
         $this->newLine();
 
         // Show breakdown by status
         $this->displayStatusBreakdown($cutoffDate, $statuses);
-        
+
         // Show breakdown by event type
         $this->displayEventTypeBreakdown($cutoffDate, $statuses);
     }
@@ -115,8 +118,8 @@ class CleanupWebhookEventsCommand extends Command
     protected function displayStatusBreakdown(Carbon $cutoffDate, array $statuses): void
     {
         $query = WebhookEvent::where('created_at', '<', $cutoffDate);
-        
-        if (!in_array('all', $statuses)) {
+
+        if (! \in_array('all', $statuses, true)) {
             $query->whereIn('status', $statuses);
         }
 
@@ -137,8 +140,8 @@ class CleanupWebhookEventsCommand extends Command
     protected function displayEventTypeBreakdown(Carbon $cutoffDate, array $statuses): void
     {
         $query = WebhookEvent::where('created_at', '<', $cutoffDate);
-        
-        if (!in_array('all', $statuses)) {
+
+        if (! \in_array('all', $statuses, true)) {
             $query->whereIn('status', $statuses);
         }
 
@@ -171,7 +174,7 @@ class CleanupWebhookEventsCommand extends Command
         $totalDeleted = 0;
         $totalCount = $query->count();
 
-        if ($totalCount === 0) {
+        if (0 === $totalCount) {
             return 0;
         }
 
@@ -188,22 +191,21 @@ class CleanupWebhookEventsCommand extends Command
                 break;
             }
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 // Delete the batch
                 $deletedInBatch = WebhookEvent::whereIn('id', $ids)->delete();
                 $totalDeleted += $deletedInBatch;
             } else {
-                $totalDeleted += count($ids);
+                $totalDeleted += \count($ids);
             }
 
-            $progressBar->advance(count($ids));
+            $progressBar->advance(\count($ids));
 
             // Small delay to prevent overwhelming the database
-            if (!$dryRun) {
+            if (! $dryRun) {
                 usleep(50000); // 50ms
             }
-
-        } while (count($ids) === $batchSize);
+        } while (\count($ids) === $batchSize);
 
         $progressBar->finish();
         $this->newLine();

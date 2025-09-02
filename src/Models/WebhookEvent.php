@@ -1,31 +1,30 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
- * Webhook event model for storing incoming webhook data
- * 
- * @property int $id
- * @property string|null $event_id
- * @property string $event_type
- * @property string|null $site_id
- * @property Collection $event_data
- * @property Collection|null $headers
- * @property Carbon|null $event_timestamp
- * @property bool $processed
- * @property Carbon|null $processed_at
- * @property int $retry_count
- * @property string|null $error
- * @property string|null $signature
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * Webhook event model for storing incoming webhook data.
+ *
+ * @property int             $id
+ * @property null|string     $event_id
+ * @property string          $event_type
+ * @property null|string     $site_id
+ * @property Collection      $event_data
+ * @property null|Collection $headers
+ * @property null|Carbon     $event_timestamp
+ * @property bool            $processed
+ * @property null|Carbon     $processed_at
+ * @property int             $retry_count
+ * @property null|string     $error
+ * @property null|string     $signature
+ * @property Carbon          $created_at
+ * @property Carbon          $updated_at
  */
 class WebhookEvent extends Model
 {
@@ -62,7 +61,7 @@ class WebhookEvent extends Model
     ];
 
     /**
-     * Get the table name from configuration
+     * Get the table name from configuration.
      */
     public function getTable(): string
     {
@@ -70,7 +69,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Get the database connection from configuration
+     * Get the database connection from configuration.
      */
     public function getConnectionName(): ?string
     {
@@ -78,7 +77,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Scope for unprocessed events
+     * Scope for unprocessed events.
      */
     public function scopeUnprocessed(Builder $query): Builder
     {
@@ -86,7 +85,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Scope for processed events
+     * Scope for processed events.
      */
     public function scopeProcessed(Builder $query): Builder
     {
@@ -94,7 +93,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Scope for failed events (with errors)
+     * Scope for failed events (with errors).
      */
     public function scopeFailed(Builder $query): Builder
     {
@@ -102,7 +101,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Scope for successful events (processed without errors)
+     * Scope for successful events (processed without errors).
      */
     public function scopeSuccessful(Builder $query): Builder
     {
@@ -110,7 +109,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Scope for specific event type
+     * Scope for specific event type.
      */
     public function scopeOfType(Builder $query, string $type): Builder
     {
@@ -118,7 +117,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Scope for specific site
+     * Scope for specific site.
      */
     public function scopeForSite(Builder $query, string $siteId): Builder
     {
@@ -126,7 +125,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Scope for events within date range
+     * Scope for events within date range.
      */
     public function scopeBetweenDates(Builder $query, Carbon $start, Carbon $end): Builder
     {
@@ -134,7 +133,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Scope for events that can be retried
+     * Scope for events that can be retried.
      */
     public function scopeRetryable(Builder $query, int $maxRetries = 3): Builder
     {
@@ -143,7 +142,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Mark event as processed successfully
+     * Mark event as processed successfully.
      */
     public function markAsProcessed(): bool
     {
@@ -155,7 +154,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Mark event as failed with error message
+     * Mark event as failed with error message.
      */
     public function markAsFailed(string $error): bool
     {
@@ -167,7 +166,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Reset event for retry
+     * Reset event for retry.
      */
     public function resetForRetry(): bool
     {
@@ -179,15 +178,15 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Check if event can be retried
+     * Check if event can be retried.
      */
     public function canRetry(int $maxRetries = 3): bool
     {
-        return !$this->processed && $this->retry_count < $maxRetries;
+        return ! $this->processed && $this->retry_count < $maxRetries;
     }
 
     /**
-     * Check if event has exceeded max retries
+     * Check if event has exceeded max retries.
      */
     public function hasExceededMaxRetries(int $maxRetries = 3): bool
     {
@@ -195,7 +194,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Get event data as array
+     * Get event data as array.
      */
     public function getEventDataArray(): array
     {
@@ -203,7 +202,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Get specific field from event data
+     * Get specific field from event data.
      */
     public function getEventDataField(string $key, mixed $default = null): mixed
     {
@@ -211,7 +210,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Check if event is of specific type
+     * Check if event is of specific type.
      */
     public function isType(string $type): bool
     {
@@ -219,7 +218,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Check if event is for specific site
+     * Check if event is for specific site.
      */
     public function isForSite(string $siteId): bool
     {
@@ -227,7 +226,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Get the age of the event in minutes
+     * Get the age of the event in minutes.
      */
     public function getAgeInMinutes(): int
     {
@@ -235,7 +234,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Check if event is stale (older than specified minutes)
+     * Check if event is stale (older than specified minutes).
      */
     public function isStale(int $minutes = 60): bool
     {
@@ -243,7 +242,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Get formatted event summary
+     * Get formatted event summary.
      */
     public function getSummary(): array
     {
@@ -254,14 +253,14 @@ class WebhookEvent extends Model
             'site_id' => $this->site_id,
             'processed' => $this->processed,
             'retry_count' => $this->retry_count,
-            'has_error' => !is_null($this->error),
+            'has_error' => null !== $this->error,
             'age_minutes' => $this->getAgeInMinutes(),
             'created_at' => $this->created_at->toIso8601String(),
         ];
     }
 
     /**
-     * Create event from webhook payload
+     * Create event from webhook payload.
      */
     public static function createFromWebhook(array $payload, ?string $signature = null, ?array $headers = null): static
     {
@@ -271,15 +270,15 @@ class WebhookEvent extends Model
             'site_id' => $payload['SiteId'] ?? null,
             'event_data' => collect($payload['EventData'] ?? []),
             'headers' => $headers ? collect($headers) : null,
-            'event_timestamp' => isset($payload['EventTimestamp']) 
-                ? Carbon::parse($payload['EventTimestamp']) 
+            'event_timestamp' => isset($payload['EventTimestamp'])
+                ? Carbon::parse($payload['EventTimestamp'])
                 : now(),
             'signature' => $signature,
         ]);
     }
 
     /**
-     * Get events that need processing
+     * Get events that need processing.
      */
     public static function needingProcessing(int $maxRetries = 3): \Illuminate\Database\Eloquent\Collection
     {
@@ -289,7 +288,7 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Get processing statistics
+     * Get processing statistics.
      */
     public static function getProcessingStats(): array
     {
@@ -308,12 +307,12 @@ class WebhookEvent extends Model
     }
 
     /**
-     * Clean up old processed events
+     * Clean up old processed events.
      */
     public static function cleanup(int $daysToKeep = 30): int
     {
         $cutoff = now()->subDays($daysToKeep);
-        
+
         return static::processed()
             ->where('processed_at', '<', $cutoff)
             ->delete();

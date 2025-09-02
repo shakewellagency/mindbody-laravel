@@ -1,28 +1,27 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Exceptions;
 
 /**
- * Exception thrown when authentication with the Mindbody API fails
+ * Exception thrown when authentication with the Mindbody API fails.
  */
 class AuthenticationException extends MindbodyApiException
 {
     /**
-     * Create a new authentication exception
+     * Create a new authentication exception.
      */
     public static function invalidCredentials(string $username = ''): self
     {
-        $message = $username 
-            ? "Authentication failed for user: {$username}" 
+        $message = $username
+            ? "Authentication failed for user: {$username}"
             : 'Authentication failed: Invalid credentials';
 
         return new self($message, 401);
     }
 
     /**
-     * Create exception for expired token
+     * Create exception for expired token.
      */
     public static function tokenExpired(): self
     {
@@ -30,7 +29,7 @@ class AuthenticationException extends MindbodyApiException
     }
 
     /**
-     * Create exception for missing API key
+     * Create exception for missing API key.
      */
     public static function missingApiKey(): self
     {
@@ -38,7 +37,7 @@ class AuthenticationException extends MindbodyApiException
     }
 
     /**
-     * Create exception for invalid API key
+     * Create exception for invalid API key.
      */
     public static function invalidApiKey(): self
     {
@@ -46,7 +45,7 @@ class AuthenticationException extends MindbodyApiException
     }
 
     /**
-     * Create exception for missing site ID
+     * Create exception for missing site ID.
      */
     public static function missingSiteId(): self
     {
@@ -54,11 +53,11 @@ class AuthenticationException extends MindbodyApiException
     }
 
     /**
-     * Create exception for insufficient permissions
+     * Create exception for insufficient permissions.
      */
     public static function insufficientPermissions(string $operation = ''): self
     {
-        $message = $operation 
+        $message = $operation
             ? "Insufficient permissions to perform operation: {$operation}"
             : 'Insufficient permissions for this operation';
 

@@ -1,24 +1,23 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 /**
- * API token model for caching authentication tokens
- * 
- * @property int $id
+ * API token model for caching authentication tokens.
+ *
+ * @property int    $id
  * @property string $username
  * @property string $access_token
  * @property string $token_type
- * @property int $expires_in
+ * @property int    $expires_in
  * @property Carbon $issued_at
  * @property Carbon $expires_at
- * @property bool $revoked
+ * @property bool   $revoked
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -51,7 +50,7 @@ class ApiToken extends Model
     ];
 
     /**
-     * Get the table name from configuration
+     * Get the table name from configuration.
      */
     public function getTable(): string
     {
@@ -59,7 +58,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Get the database connection from configuration
+     * Get the database connection from configuration.
      */
     public function getConnectionName(): ?string
     {
@@ -67,7 +66,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Scope for valid (non-revoked, non-expired) tokens
+     * Scope for valid (non-revoked, non-expired) tokens.
      */
     public function scopeValid(Builder $query): Builder
     {
@@ -76,7 +75,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Scope for expired tokens
+     * Scope for expired tokens.
      */
     public function scopeExpired(Builder $query): Builder
     {
@@ -84,7 +83,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Scope for revoked tokens
+     * Scope for revoked tokens.
      */
     public function scopeRevoked(Builder $query): Builder
     {
@@ -92,7 +91,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Scope for specific username
+     * Scope for specific username.
      */
     public function scopeForUsername(Builder $query, string $username): Builder
     {
@@ -100,15 +99,15 @@ class ApiToken extends Model
     }
 
     /**
-     * Check if token is valid (not expired and not revoked)
+     * Check if token is valid (not expired and not revoked).
      */
     public function isValid(): bool
     {
-        return !$this->revoked && $this->expires_at->isFuture();
+        return ! $this->revoked && $this->expires_at->isFuture();
     }
 
     /**
-     * Check if token is expired
+     * Check if token is expired.
      */
     public function isExpired(): bool
     {
@@ -116,7 +115,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Check if token is revoked
+     * Check if token is revoked.
      */
     public function isRevoked(): bool
     {
@@ -124,7 +123,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Revoke the token
+     * Revoke the token.
      */
     public function revoke(): bool
     {
@@ -132,7 +131,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Get remaining validity time in seconds
+     * Get remaining validity time in seconds.
      */
     public function getRemainingSeconds(): int
     {
@@ -144,7 +143,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Check if token expires within specified minutes
+     * Check if token expires within specified minutes.
      */
     public function expiresWithin(int $minutes): bool
     {
@@ -152,16 +151,16 @@ class ApiToken extends Model
     }
 
     /**
-     * Create token from API response
+     * Create token from API response.
      */
     public static function createFromApiResponse(
         string $username,
         array $tokenData
     ): static {
-        $issuedAt = isset($tokenData['issued_at']) 
+        $issuedAt = isset($tokenData['issued_at'])
             ? Carbon::createFromTimestamp($tokenData['issued_at'])
             : now();
-            
+
         $expiresIn = $tokenData['expires_in'] ?? 3600;
         $expiresAt = $issuedAt->copy()->addSeconds($expiresIn);
 
@@ -176,7 +175,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Find valid token for username
+     * Find valid token for username.
      */
     public static function findValidForUsername(string $username): ?static
     {
@@ -187,21 +186,21 @@ class ApiToken extends Model
     }
 
     /**
-     * Clean up expired and revoked tokens
+     * Clean up expired and revoked tokens.
      */
     public static function cleanup(): int
     {
         $retentionDays = config('mindbody.database.cleanup.api_tokens_retention_days', 7);
         $cutoff = now()->subDays($retentionDays);
-        
-        return static::where(function (Builder $query) use ($cutoff) {
+
+        return static::where(static function (Builder $query) use ($cutoff) {
             $query->where('revoked', true)
                 ->orWhere('expires_at', '<', $cutoff);
         })->delete();
     }
 
     /**
-     * Revoke all tokens for username
+     * Revoke all tokens for username.
      */
     public static function revokeAllForUsername(string $username): int
     {
@@ -211,7 +210,7 @@ class ApiToken extends Model
     }
 
     /**
-     * Get token statistics
+     * Get token statistics.
      */
     public static function getStats(): array
     {

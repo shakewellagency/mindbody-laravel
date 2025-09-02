@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -10,12 +9,16 @@ use Shakewell\MindbodyLaravel\Events\Webhooks\AppointmentBooked;
 use Shakewell\MindbodyLaravel\Models\WebhookEvent;
 use Shakewell\MindbodyLaravel\Tests\TestCase;
 
-class WebhookControllerTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
+final class WebhookControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
-    public function it_can_handle_valid_webhook_request(): void
+    public function testItCanHandleValidWebhookRequest(): void
     {
         Event::fake();
 
@@ -37,8 +40,7 @@ class WebhookControllerTest extends TestCase
         Event::assertDispatched(AppointmentBooked::class);
     }
 
-    /** @test */
-    public function it_rejects_webhook_with_invalid_signature(): void
+    public function testItRejectsWebhookWithInvalidSignature(): void
     {
         $payload = $this->createWebhookPayload();
         $invalidSignature = 'sha256=invalid-signature';
@@ -58,8 +60,7 @@ class WebhookControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_rejects_webhook_without_signature(): void
+    public function testItRejectsWebhookWithoutSignature(): void
     {
         $payload = $this->createWebhookPayload();
 
@@ -72,8 +73,7 @@ class WebhookControllerTest extends TestCase
             ]);
     }
 
-    /** @test */
-    public function it_allows_webhook_when_signature_verification_is_disabled(): void
+    public function testItAllowsWebhookWhenSignatureVerificationIsDisabled(): void
     {
         config(['mindbody.webhooks.verify_signature' => false]);
         Event::fake();
@@ -86,8 +86,7 @@ class WebhookControllerTest extends TestCase
         $this->assertWebhookEventCreated($payload['EventId'], $payload['EventType']);
     }
 
-    /** @test */
-    public function it_handles_different_signature_header_formats(): void
+    public function testItHandlesDifferentSignatureHeaderFormats(): void
     {
         Event::fake();
 
@@ -112,8 +111,7 @@ class WebhookControllerTest extends TestCase
         }
     }
 
-    /** @test */
-    public function it_handles_duplicate_webhooks(): void
+    public function testItHandlesDuplicateWebhooks(): void
     {
         Event::fake();
 
@@ -134,8 +132,7 @@ class WebhookControllerTest extends TestCase
         $this->assertDatabaseCount('mindbody_webhook_events', 1);
     }
 
-    /** @test */
-    public function it_provides_health_check_endpoint(): void
+    public function testItProvidesHealthCheckEndpoint(): void
     {
         $response = $this->get('/mindbody/webhooks/health');
 
@@ -148,8 +145,7 @@ class WebhookControllerTest extends TestCase
             ]);
     }
 
-    /** @test */
-    public function it_provides_test_endpoint_for_localhost(): void
+    public function testItProvidesTestEndpointForLocalhost(): void
     {
         config(['mindbody.webhooks.enable_test_endpoint' => true]);
 
@@ -164,8 +160,7 @@ class WebhookControllerTest extends TestCase
             ]);
     }
 
-    /** @test */
-    public function it_blocks_test_endpoint_from_unauthorized_ips(): void
+    public function testItBlocksTestEndpointFromUnauthorizedIps(): void
     {
         config([
             'mindbody.webhooks.enable_test_endpoint' => true,
@@ -173,9 +168,10 @@ class WebhookControllerTest extends TestCase
         ]);
 
         // Override the IP for this test
-        $this->app->bind('request', function () {
+        $this->app->bind('request', static function () {
             $request = \Illuminate\Http\Request::create('/mindbody/webhooks/test');
             $request->server->set('REMOTE_ADDR', '10.0.0.1');
+
             return $request;
         });
 
@@ -184,8 +180,7 @@ class WebhookControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
-    public function it_provides_stats_endpoint_when_enabled(): void
+    public function testItProvidesStatsEndpointWhenEnabled(): void
     {
         config(['mindbody.webhooks.expose_stats' => true]);
 
@@ -202,8 +197,7 @@ class WebhookControllerTest extends TestCase
             ]);
     }
 
-    /** @test */
-    public function it_blocks_stats_endpoint_when_disabled(): void
+    public function testItBlocksStatsEndpointWhenDisabled(): void
     {
         config(['mindbody.webhooks.expose_stats' => false]);
 
@@ -212,8 +206,7 @@ class WebhookControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** @test */
-    public function it_handles_malformed_json(): void
+    public function testItHandlesMalformedJson(): void
     {
         $signature = $this->createWebhookSignature('invalid-json');
 
@@ -229,8 +222,7 @@ class WebhookControllerTest extends TestCase
             ]);
     }
 
-    /** @test */
-    public function it_logs_security_events(): void
+    public function testItLogsSecurityEvents(): void
     {
         config(['mindbody.logging.enabled' => true]);
 

@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Services;
 
 use Illuminate\Http\Client\PendingRequest;
@@ -20,31 +19,30 @@ use Shakewell\MindbodyLaravel\Services\Api\StaffEndpoint;
 use Shakewell\MindbodyLaravel\Services\Authentication\TokenManager;
 
 /**
- * Main client for interacting with the Mindbody Public API
+ * Main client for interacting with the Mindbody Public API.
  */
 class MindbodyClient
 {
-    protected array $config;
-    
-    protected TokenManager $tokenManager;
-    
-    protected ?string $userToken = null;
-
     // API Endpoints
     public readonly AppointmentEndpoint $appointment;
-    
+
     public readonly ClassEndpoint $class;
-    
+
     public readonly ClientEndpoint $client;
-    
+
     public readonly SaleEndpoint $sale;
-    
+
     public readonly SiteEndpoint $site;
-    
+
     public readonly StaffEndpoint $staff;
+    protected array $config;
+
+    protected TokenManager $tokenManager;
+
+    protected ?string $userToken = null;
 
     /**
-     * Create a new Mindbody client instance
+     * Create a new Mindbody client instance.
      */
     public function __construct(array $config)
     {
@@ -64,19 +62,19 @@ class MindbodyClient
     }
 
     /**
-     * Authenticate with staff credentials
+     * Authenticate with staff credentials.
      */
     public function authenticate(string $username, string $password): self
     {
         $this->userToken = $this->tokenManager->getUserToken($username, $password);
-        
+
         $this->logDebug('Authenticated successfully', ['username' => $username]);
 
         return $this;
     }
 
     /**
-     * Get the current user token
+     * Get the current user token.
      */
     public function getUserToken(): ?string
     {
@@ -84,17 +82,17 @@ class MindbodyClient
     }
 
     /**
-     * Clear the current user token
+     * Clear the current user token.
      */
     public function clearUserToken(): self
     {
         $this->userToken = null;
-        
+
         return $this;
     }
 
     /**
-     * Make a GET request to the API
+     * Make a GET request to the API.
      */
     public function get(string $endpoint, array $params = []): array
     {
@@ -102,7 +100,7 @@ class MindbodyClient
     }
 
     /**
-     * Make a POST request to the API
+     * Make a POST request to the API.
      */
     public function post(string $endpoint, array $data = []): array
     {
@@ -110,7 +108,7 @@ class MindbodyClient
     }
 
     /**
-     * Make a PUT request to the API
+     * Make a PUT request to the API.
      */
     public function put(string $endpoint, array $data = []): array
     {
@@ -118,22 +116,22 @@ class MindbodyClient
     }
 
     /**
-     * Make a DELETE request to the API
+     * Make a DELETE request to the API.
      */
     public function delete(string $endpoint, array $params = []): array
     {
         $options = empty($params) ? [] : ['query' => $params];
-        
+
         return $this->request('DELETE', $endpoint, $options);
     }
 
     /**
-     * Make a request to the API with caching support
+     * Make a request to the API with caching support.
      */
     public function request(string $method, string $endpoint, array $options = []): array
     {
         // Add caching for GET requests
-        if ($method === 'GET' && $this->isCacheEnabled()) {
+        if ('GET' === $method && $this->isCacheEnabled()) {
             $cacheKey = $this->getCacheKey($endpoint, $options['query'] ?? []);
             $ttl = $this->getCacheTtl($endpoint);
 
@@ -146,144 +144,7 @@ class MindbodyClient
     }
 
     /**
-     * Execute the HTTP request
-     */
-    protected function executeRequest(string $method, string $endpoint, array $options = []): array
-    {
-        $url = $this->buildUrl($endpoint);
-        $headers = $this->tokenManager->getHeaders($this->userToken);
-
-        $this->logRequest($method, $url, $options);
-
-        $httpClient = $this->createHttpClient($headers);
-        
-        $response = $httpClient->send($method, $url, $options);
-
-        $this->logResponse($response);
-
-        if (! $response->successful()) {
-            $this->handleErrorResponse($response);
-        }
-
-        return $response->json() ?? [];
-    }
-
-    /**
-     * Create HTTP client with configured options
-     */
-    protected function createHttpClient(array $headers): PendingRequest
-    {
-        $client = Http::withHeaders($headers)
-            ->timeout($this->config['api']['timeout'])
-            ->connectTimeout($this->config['api']['connect_timeout'] ?? 10);
-
-        // Add retry logic
-        if ($this->config['api']['retry_times'] > 0) {
-            $client->retry(
-                $this->config['api']['retry_times'],
-                $this->config['api']['retry_delay'] ?? 1000,
-                function ($exception, $request) {
-                    // Only retry on server errors or network issues
-                    return $exception instanceof \Exception && 
-                           ! ($exception instanceof MindbodyApiException && $exception->isClientError());
-                }
-            );
-        }
-
-        return $client;
-    }
-
-    /**
-     * Handle error responses
-     */
-    protected function handleErrorResponse(Response $response): void
-    {
-        $this->logError('API request failed', [
-            'status' => $response->status(),
-            'body' => $response->json(),
-        ]);
-
-        // Handle rate limiting
-        if ($response->status() === 429) {
-            $retryAfter = $response->header('Retry-After');
-            throw RateLimitException::limitExceeded($retryAfter ? (int) $retryAfter : null);
-        }
-
-        throw MindbodyApiException::fromResponse($response);
-    }
-
-    /**
-     * Build the full URL for an endpoint
-     */
-    protected function buildUrl(string $endpoint): string
-    {
-        return rtrim($this->config['api']['base_url'], '/') . '/' . ltrim($endpoint, '/');
-    }
-
-    /**
-     * Check if caching is enabled
-     */
-    protected function isCacheEnabled(): bool
-    {
-        return $this->config['cache']['enabled'] ?? false;
-    }
-
-    /**
-     * Generate cache key for request
-     */
-    protected function getCacheKey(string $endpoint, array $params): string
-    {
-        $prefix = $this->config['cache']['prefix'] ?? 'mindbody';
-        $key = md5($endpoint . serialize($params));
-        
-        if ($this->userToken) {
-            $key .= ':' . md5($this->userToken);
-        }
-
-        return "{$prefix}:api:{$key}";
-    }
-
-    /**
-     * Get cache TTL for endpoint
-     */
-    protected function getCacheTtl(string $endpoint): int
-    {
-        // Extract the first part of the endpoint to determine data type
-        $parts = explode('/', trim($endpoint, '/'));
-        $dataType = $parts[0] ?? 'default';
-
-        $strategies = $this->config['cache']['strategies'] ?? [];
-        
-        if (isset($strategies[$dataType]['ttl'])) {
-            return $strategies[$dataType]['ttl'];
-        }
-
-        return $this->config['cache']['ttl'] ?? 3600;
-    }
-
-    /**
-     * Auto-authenticate if credentials are configured
-     */
-    protected function autoAuthenticate(): void
-    {
-        $username = $this->config['api']['staff_username'] ?? null;
-        $password = $this->config['api']['staff_password'] ?? null;
-
-        if ($username && $password) {
-            try {
-                $this->authenticate($username, $password);
-            } catch (\Exception $e) {
-                $this->logError('Auto-authentication failed', [
-                    'username' => $username,
-                    'error' => $e->getMessage(),
-                ]);
-                // Don't throw here, let individual requests handle authentication errors
-            }
-        }
-    }
-
-    /**
-     * Clear all cached data
+     * Clear all cached data.
      */
     public function clearCache(?string $tag = null): bool
     {
@@ -307,11 +168,11 @@ class MindbodyClient
     }
 
     /**
-     * Get configuration value
+     * Get configuration value.
      */
-    public function getConfig(string $key = null): mixed
+    public function getConfig(?string $key = null): mixed
     {
-        if ($key === null) {
+        if (null === $key) {
             return $this->config;
         }
 
@@ -319,7 +180,7 @@ class MindbodyClient
     }
 
     /**
-     * Test API connectivity
+     * Test API connectivity.
      */
     public function testConnection(): bool
     {
@@ -327,7 +188,144 @@ class MindbodyClient
     }
 
     /**
-     * Log API request
+     * Execute the HTTP request.
+     */
+    protected function executeRequest(string $method, string $endpoint, array $options = []): array
+    {
+        $url = $this->buildUrl($endpoint);
+        $headers = $this->tokenManager->getHeaders($this->userToken);
+
+        $this->logRequest($method, $url, $options);
+
+        $httpClient = $this->createHttpClient($headers);
+
+        $response = $httpClient->send($method, $url, $options);
+
+        $this->logResponse($response);
+
+        if (! $response->successful()) {
+            $this->handleErrorResponse($response);
+        }
+
+        return $response->json() ?? [];
+    }
+
+    /**
+     * Create HTTP client with configured options.
+     */
+    protected function createHttpClient(array $headers): PendingRequest
+    {
+        $client = Http::withHeaders($headers)
+            ->timeout($this->config['api']['timeout'])
+            ->connectTimeout($this->config['api']['connect_timeout'] ?? 10);
+
+        // Add retry logic
+        if ($this->config['api']['retry_times'] > 0) {
+            $client->retry(
+                $this->config['api']['retry_times'],
+                $this->config['api']['retry_delay'] ?? 1000,
+                static function ($exception, $request) {
+                    // Only retry on server errors or network issues
+                    return $exception instanceof \Exception
+                           && ! ($exception instanceof MindbodyApiException && $exception->isClientError());
+                }
+            );
+        }
+
+        return $client;
+    }
+
+    /**
+     * Handle error responses.
+     */
+    protected function handleErrorResponse(Response $response): void
+    {
+        $this->logError('API request failed', [
+            'status' => $response->status(),
+            'body' => $response->json(),
+        ]);
+
+        // Handle rate limiting
+        if (429 === $response->status()) {
+            $retryAfter = $response->header('Retry-After');
+            throw RateLimitException::limitExceeded($retryAfter ? (int) $retryAfter : null);
+        }
+
+        throw MindbodyApiException::fromResponse($response);
+    }
+
+    /**
+     * Build the full URL for an endpoint.
+     */
+    protected function buildUrl(string $endpoint): string
+    {
+        return rtrim($this->config['api']['base_url'], '/').'/'.ltrim($endpoint, '/');
+    }
+
+    /**
+     * Check if caching is enabled.
+     */
+    protected function isCacheEnabled(): bool
+    {
+        return $this->config['cache']['enabled'] ?? false;
+    }
+
+    /**
+     * Generate cache key for request.
+     */
+    protected function getCacheKey(string $endpoint, array $params): string
+    {
+        $prefix = $this->config['cache']['prefix'] ?? 'mindbody';
+        $key = md5($endpoint.serialize($params));
+
+        if ($this->userToken) {
+            $key .= ':'.md5($this->userToken);
+        }
+
+        return "{$prefix}:api:{$key}";
+    }
+
+    /**
+     * Get cache TTL for endpoint.
+     */
+    protected function getCacheTtl(string $endpoint): int
+    {
+        // Extract the first part of the endpoint to determine data type
+        $parts = explode('/', trim($endpoint, '/'));
+        $dataType = $parts[0] ?? 'default';
+
+        $strategies = $this->config['cache']['strategies'] ?? [];
+
+        if (isset($strategies[$dataType]['ttl'])) {
+            return $strategies[$dataType]['ttl'];
+        }
+
+        return $this->config['cache']['ttl'] ?? 3600;
+    }
+
+    /**
+     * Auto-authenticate if credentials are configured.
+     */
+    protected function autoAuthenticate(): void
+    {
+        $username = $this->config['api']['staff_username'] ?? null;
+        $password = $this->config['api']['staff_password'] ?? null;
+
+        if ($username && $password) {
+            try {
+                $this->authenticate($username, $password);
+            } catch (\Exception $e) {
+                $this->logError('Auto-authentication failed', [
+                    'username' => $username,
+                    'error' => $e->getMessage(),
+                ]);
+                // Don't throw here, let individual requests handle authentication errors
+            }
+        }
+    }
+
+    /**
+     * Log API request.
      */
     protected function logRequest(string $method, string $url, array $options): void
     {
@@ -336,7 +334,7 @@ class MindbodyClient
         }
 
         $shouldLog = $this->config['logging']['log_requests'] ?? false;
-        
+
         if ($shouldLog) {
             $context = [
                 'method' => $method,
@@ -353,7 +351,7 @@ class MindbodyClient
     }
 
     /**
-     * Log API response
+     * Log API response.
      */
     protected function logResponse(Response $response): void
     {
@@ -362,7 +360,7 @@ class MindbodyClient
         }
 
         $shouldLog = $this->config['logging']['log_responses'] ?? false;
-        
+
         if ($shouldLog) {
             $context = [
                 'status' => $response->status(),
@@ -383,7 +381,7 @@ class MindbodyClient
         if ($this->config['logging']['log_performance'] ?? false) {
             $threshold = $this->config['logging']['slow_request_threshold'] ?? 2000;
             $duration = $response->transferStats?->getTransferTime() * 1000 ?? 0;
-            
+
             if ($duration > $threshold) {
                 Log::channel($this->config['logging']['channel'] ?? 'stack')
                     ->warning('[Mindbody Slow Request]', [
@@ -395,7 +393,7 @@ class MindbodyClient
     }
 
     /**
-     * Log debug message
+     * Log debug message.
      */
     protected function logDebug(string $message, array $context = []): void
     {
@@ -406,7 +404,7 @@ class MindbodyClient
     }
 
     /**
-     * Log error message
+     * Log error message.
      */
     protected function logError(string $message, array $context = []): void
     {

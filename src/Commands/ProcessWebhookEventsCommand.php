@@ -1,21 +1,20 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Commands;
 
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Queue;
 use Shakewell\MindbodyLaravel\Models\WebhookEvent;
 use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookHandler;
-use Carbon\Carbon;
 
 /**
- * Command to process pending webhook events
+ * Command to process pending webhook events.
  */
 class ProcessWebhookEventsCommand extends Command
 {
-    protected $signature = 'mindbody:process-webhooks 
+    protected $signature = 'mindbody:process-webhooks
                            {--limit=100 : Maximum number of events to process}
                            {--timeout=300 : Maximum execution time in seconds}
                            {--retry-failed : Include failed events for retry}
@@ -54,6 +53,7 @@ class ProcessWebhookEventsCommand extends Command
 
         if ($events->isEmpty()) {
             $this->info('No pending webhook events to process');
+
             return Command::SUCCESS;
         }
 
@@ -62,6 +62,7 @@ class ProcessWebhookEventsCommand extends Command
 
         if ($dryRun) {
             $this->displayEventsToProcess($events);
+
             return Command::SUCCESS;
         }
 
@@ -81,12 +82,12 @@ class ProcessWebhookEventsCommand extends Command
             ->limit($limit);
 
         if ($retryFailed) {
-            $query->where(function ($q) use ($maxRetries) {
+            $query->where(static function ($q) use ($maxRetries) {
                 $q->where('status', 'pending')
-                  ->orWhere(function ($subQ) use ($maxRetries) {
-                      $subQ->where('status', 'failed')
-                           ->where('retry_count', '<', $maxRetries);
-                  });
+                    ->orWhere(static function ($subQ) use ($maxRetries) {
+                        $subQ->where('status', 'failed')
+                            ->where('retry_count', '<', $maxRetries);
+                    });
             });
         } else {
             $query->where('status', 'pending');
@@ -107,7 +108,7 @@ class ProcessWebhookEventsCommand extends Command
                 $event->status,
                 $event->retry_count,
                 $event->created_at->format('Y-m-d H:i:s'),
-                $event->error_message ? substr($event->error_message, 0, 50) . '...' : 'None',
+                $event->error_message ? substr($event->error_message, 0, 50).'...' : 'None',
             ];
         }
 
@@ -136,15 +137,14 @@ class ProcessWebhookEventsCommand extends Command
 
             try {
                 $result = $this->processEvent($event);
-                
+
                 if ($result) {
                     $stats['successful']++;
                 } else {
                     $stats['failed']++;
                 }
-                
+
                 $stats['processed']++;
-                
             } catch (\Exception $e) {
                 $this->updateEventStatus($event, 'failed', $e->getMessage());
                 $stats['failed']++;
@@ -179,7 +179,6 @@ class ProcessWebhookEventsCommand extends Command
             ]);
 
             return true;
-
         } catch (\Exception $e) {
             // Handle retry logic
             $retryCount = $event->retry_count + 1;
@@ -188,7 +187,7 @@ class ProcessWebhookEventsCommand extends Command
             if ($retryCount < $maxRetries) {
                 // Schedule for retry
                 $nextRetryAt = Carbon::now()->addMinutes($this->calculateRetryDelay($retryCount));
-                
+
                 $event->update([
                     'status' => 'pending',
                     'retry_count' => $retryCount,
@@ -220,7 +219,7 @@ class ProcessWebhookEventsCommand extends Command
     protected function calculateRetryDelay(int $retryCount): int
     {
         // Exponential backoff: 1, 2, 4, 8, 16 minutes
-        return min(pow(2, $retryCount - 1), 60);
+        return min(2 ** ($retryCount - 1), 60);
     }
 
     protected function displayResults(array $stats): void
@@ -229,7 +228,7 @@ class ProcessWebhookEventsCommand extends Command
         $this->line("  📊 Total processed: {$stats['processed']}");
         $this->line("  ✅ Successful: {$stats['successful']}");
         $this->line("  ❌ Failed: {$stats['failed']}");
-        
+
         if ($stats['skipped'] > 0) {
             $this->line("  ⏭️  Skipped: {$stats['skipped']}");
         }
@@ -252,12 +251,12 @@ class ProcessWebhookEventsCommand extends Command
         try {
             $queueName = config('mindbody.webhooks.queue_name', 'default');
             $size = Queue::size($queueName);
-            
-            $this->info("Queue status:");
+
+            $this->info('Queue status:');
             $this->line("  Queue: {$queueName}");
             $this->line("  Pending jobs: {$size}");
         } catch (\Exception $e) {
-            $this->warn("Unable to check queue status: " . $e->getMessage());
+            $this->warn('Unable to check queue status: '.$e->getMessage());
         }
     }
 

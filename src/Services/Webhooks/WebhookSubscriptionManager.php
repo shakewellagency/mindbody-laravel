@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Services\Webhooks;
 
 use Illuminate\Support\Facades\Cache;
@@ -10,16 +9,16 @@ use Illuminate\Support\Facades\Log;
 use Shakewell\MindbodyLaravel\Exceptions\MindbodyApiException;
 
 /**
- * Manages webhook subscriptions with the Mindbody Webhooks API
+ * Manages webhook subscriptions with the Mindbody Webhooks API.
  */
 class WebhookSubscriptionManager
 {
     protected array $config;
-    
+
     protected string $apiKey;
-    
+
     protected string $baseUrl;
-    
+
     protected ?string $webhookUrl;
 
     public function __construct(array $config)
@@ -32,7 +31,7 @@ class WebhookSubscriptionManager
         // Only validate API key if it's needed (not during package discovery)
         if (empty($this->apiKey)) {
             try {
-                if (app()->runningInConsole() && !app()->runningUnitTests()) {
+                if (app()->runningInConsole() && ! app()->runningUnitTests()) {
                     // Don't throw exception during package discovery or artisan commands
                     $this->apiKey = 'dummy-webhook-key-for-discovery';
                 }
@@ -44,13 +43,13 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Create a webhook subscription
+     * Create a webhook subscription.
      */
     public function subscribe(string $eventType, ?string $webhookUrl = null): array
     {
         $url = $webhookUrl ?? $this->webhookUrl;
-        
-        if (!$url) {
+
+        if (! $url) {
             throw new \InvalidArgumentException('Webhook URL is required');
         }
 
@@ -67,7 +66,7 @@ class WebhookSubscriptionManager
                 'IsActive' => true,
             ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $this->logError('Failed to create webhook subscription', [
                 'event_type' => $eventType,
                 'status' => $response->status(),
@@ -78,7 +77,7 @@ class WebhookSubscriptionManager
         }
 
         $result = $response->json();
-        
+
         $this->logInfo('Webhook subscription created successfully', [
             'event_type' => $eventType,
             'subscription_id' => $result['SubscriptionId'] ?? 'unknown',
@@ -91,7 +90,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * List all webhook subscriptions
+     * List all webhook subscriptions.
      */
     public function list(bool $useCache = true): array
     {
@@ -99,7 +98,7 @@ class WebhookSubscriptionManager
             return Cache::remember(
                 $this->getSubscriptionCacheKey(),
                 300, // 5 minutes
-                fn() => $this->fetchSubscriptions()
+                fn () => $this->fetchSubscriptions()
             );
         }
 
@@ -107,30 +106,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Fetch subscriptions from API
-     */
-    protected function fetchSubscriptions(): array
-    {
-        $this->logInfo('Fetching webhook subscriptions');
-
-        $response = Http::withHeaders($this->getHeaders())
-            ->timeout($this->config['api']['timeout'] ?? 30)
-            ->get("{$this->baseUrl}/subscriptions");
-
-        if (!$response->successful()) {
-            $this->logError('Failed to list webhook subscriptions', [
-                'status' => $response->status(),
-                'response' => $response->json(),
-            ]);
-
-            throw MindbodyApiException::fromResponse($response);
-        }
-
-        return $response->json('Subscriptions', []);
-    }
-
-    /**
-     * Get a specific subscription by ID
+     * Get a specific subscription by ID.
      */
     public function get(string $subscriptionId): array
     {
@@ -140,7 +116,7 @@ class WebhookSubscriptionManager
             ->timeout($this->config['api']['timeout'] ?? 30)
             ->get("{$this->baseUrl}/subscriptions/{$subscriptionId}");
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $this->logError('Failed to get webhook subscription', [
                 'subscription_id' => $subscriptionId,
                 'status' => $response->status(),
@@ -154,7 +130,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Update a webhook subscription
+     * Update a webhook subscription.
      */
     public function update(string $subscriptionId, array $data): array
     {
@@ -167,7 +143,7 @@ class WebhookSubscriptionManager
             ->timeout($this->config['api']['timeout'] ?? 30)
             ->put("{$this->baseUrl}/subscriptions/{$subscriptionId}", $data);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $this->logError('Failed to update webhook subscription', [
                 'subscription_id' => $subscriptionId,
                 'status' => $response->status(),
@@ -186,7 +162,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Delete a webhook subscription
+     * Delete a webhook subscription.
      */
     public function delete(string $subscriptionId): bool
     {
@@ -202,7 +178,7 @@ class WebhookSubscriptionManager
             $this->logInfo('Webhook subscription deleted successfully', [
                 'subscription_id' => $subscriptionId,
             ]);
-            
+
             // Clear subscription cache
             $this->clearSubscriptionCache();
         } else {
@@ -217,7 +193,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Subscribe to all configured events
+     * Subscribe to all configured events.
      */
     public function subscribeToAll(?string $webhookUrl = null): array
     {
@@ -225,7 +201,7 @@ class WebhookSubscriptionManager
         $results = [];
 
         $this->logInfo('Subscribing to all configured events', [
-            'event_count' => count($events),
+            'event_count' => \count($events),
             'webhook_url' => $webhookUrl ?? $this->webhookUrl,
         ]);
 
@@ -246,11 +222,11 @@ class WebhookSubscriptionManager
             }
         }
 
-        $successCount = count(array_filter($results, fn($r) => $r['success'] ?? false));
-        $failureCount = count($results) - $successCount;
+        $successCount = \count(array_filter($results, static fn ($r) => $r['success'] ?? false));
+        $failureCount = \count($results) - $successCount;
 
         $this->logInfo('Bulk subscription completed', [
-            'total' => count($results),
+            'total' => \count($results),
             'success' => $successCount,
             'failed' => $failureCount,
         ]);
@@ -259,7 +235,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Unsubscribe from all subscriptions
+     * Unsubscribe from all subscriptions.
      */
     public function unsubscribeFromAll(): array
     {
@@ -267,13 +243,13 @@ class WebhookSubscriptionManager
         $results = [];
 
         $this->logInfo('Unsubscribing from all subscriptions', [
-            'subscription_count' => count($subscriptions),
+            'subscription_count' => \count($subscriptions),
         ]);
 
         foreach ($subscriptions as $subscription) {
             $subscriptionId = $subscription['SubscriptionId'] ?? null;
-            
-            if (!$subscriptionId) {
+
+            if (! $subscriptionId) {
                 continue;
             }
 
@@ -296,7 +272,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Get subscription status for all configured events
+     * Get subscription status for all configured events.
      */
     public function getSubscriptionStatus(): array
     {
@@ -308,10 +284,10 @@ class WebhookSubscriptionManager
 
         foreach ($configuredEvents as $eventType) {
             $subscription = $this->findSubscriptionForEvent($subscriptions, $eventType, $webhookUrl);
-            
+
             $status[$eventType] = [
                 'configured' => true,
-                'subscribed' => !is_null($subscription),
+                'subscribed' => null !== $subscription,
                 'subscription_id' => $subscription['SubscriptionId'] ?? null,
                 'is_active' => $subscription['IsActive'] ?? false,
                 'webhook_url' => $subscription['WebhookUrl'] ?? null,
@@ -321,7 +297,7 @@ class WebhookSubscriptionManager
         // Check for extra subscriptions not in configuration
         foreach ($subscriptions as $subscription) {
             $eventType = $subscription['EventType'] ?? '';
-            if (!in_array($eventType, $configuredEvents, true)) {
+            if (! \in_array($eventType, $configuredEvents, true)) {
                 $status[$eventType] = [
                     'configured' => false,
                     'subscribed' => true,
@@ -336,23 +312,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Find subscription for a specific event type and webhook URL
-     */
-    protected function findSubscriptionForEvent(array $subscriptions, string $eventType, ?string $webhookUrl): ?array
-    {
-        foreach ($subscriptions as $subscription) {
-            if (($subscription['EventType'] ?? '') === $eventType) {
-                if (!$webhookUrl || ($subscription['WebhookUrl'] ?? '') === $webhookUrl) {
-                    return $subscription;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Sync subscriptions (subscribe to missing, unsubscribe from extra)
+     * Sync subscriptions (subscribe to missing, unsubscribe from extra).
      */
     public function sync(?string $webhookUrl = null): array
     {
@@ -369,8 +329,8 @@ class WebhookSubscriptionManager
         // Subscribe to missing events
         foreach ($configuredEvents as $eventType) {
             $subscription = $this->findSubscriptionForEvent($currentSubscriptions, $eventType, $webhookUrl);
-            
-            if (!$subscription) {
+
+            if (! $subscription) {
                 try {
                     $result = $this->subscribe($eventType, $webhookUrl);
                     $results['subscribed'][] = [
@@ -392,9 +352,9 @@ class WebhookSubscriptionManager
             foreach ($currentSubscriptions as $subscription) {
                 $eventType = $subscription['EventType'] ?? '';
                 $subscriptionWebhookUrl = $subscription['WebhookUrl'] ?? '';
-                
-                if (!in_array($eventType, $configuredEvents, true) && 
-                    $subscriptionWebhookUrl === $webhookUrl) {
+
+                if (! \in_array($eventType, $configuredEvents, true)
+                    && $subscriptionWebhookUrl === $webhookUrl) {
                     try {
                         $subscriptionId = $subscription['SubscriptionId'];
                         $this->delete($subscriptionId);
@@ -415,22 +375,22 @@ class WebhookSubscriptionManager
         }
 
         $this->logInfo('Subscription sync completed', [
-            'subscribed' => count($results['subscribed']),
-            'unsubscribed' => count($results['unsubscribed']),
-            'errors' => count($results['errors']),
+            'subscribed' => \count($results['subscribed']),
+            'unsubscribed' => \count($results['unsubscribed']),
+            'errors' => \count($results['errors']),
         ]);
 
         return $results;
     }
 
     /**
-     * Test webhook endpoint connectivity
+     * Test webhook endpoint connectivity.
      */
     public function testWebhookEndpoint(?string $webhookUrl = null): array
     {
         $url = $webhookUrl ?? $this->webhookUrl;
-        
-        if (!$url) {
+
+        if (! $url) {
             return [
                 'success' => false,
                 'error' => 'No webhook URL configured',
@@ -455,7 +415,6 @@ class WebhookSubscriptionManager
                 'response_time' => $response->transferStats?->getTransferTime() ?? null,
                 'url' => $url,
             ];
-
         } catch (\Exception $e) {
             return [
                 'success' => false,
@@ -466,7 +425,46 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Get request headers for API calls
+     * Fetch subscriptions from API.
+     */
+    protected function fetchSubscriptions(): array
+    {
+        $this->logInfo('Fetching webhook subscriptions');
+
+        $response = Http::withHeaders($this->getHeaders())
+            ->timeout($this->config['api']['timeout'] ?? 30)
+            ->get("{$this->baseUrl}/subscriptions");
+
+        if (! $response->successful()) {
+            $this->logError('Failed to list webhook subscriptions', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+
+            throw MindbodyApiException::fromResponse($response);
+        }
+
+        return $response->json('Subscriptions', []);
+    }
+
+    /**
+     * Find subscription for a specific event type and webhook URL.
+     */
+    protected function findSubscriptionForEvent(array $subscriptions, string $eventType, ?string $webhookUrl): ?array
+    {
+        foreach ($subscriptions as $subscription) {
+            if (($subscription['EventType'] ?? '') === $eventType) {
+                if (! $webhookUrl || ($subscription['WebhookUrl'] ?? '') === $webhookUrl) {
+                    return $subscription;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get request headers for API calls.
      */
     protected function getHeaders(): array
     {
@@ -478,7 +476,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Get subscription cache key
+     * Get subscription cache key.
      */
     protected function getSubscriptionCacheKey(): string
     {
@@ -486,7 +484,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Clear subscription cache
+     * Clear subscription cache.
      */
     protected function clearSubscriptionCache(): void
     {
@@ -494,7 +492,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Check if logging is enabled
+     * Check if logging is enabled.
      */
     protected function isLoggingEnabled(): bool
     {
@@ -502,7 +500,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Log info message
+     * Log info message.
      */
     protected function logInfo(string $message, array $context = []): void
     {
@@ -513,7 +511,7 @@ class WebhookSubscriptionManager
     }
 
     /**
-     * Log error message
+     * Log error message.
      */
     protected function logError(string $message, array $context = []): void
     {

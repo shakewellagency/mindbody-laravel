@@ -1,19 +1,18 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Commands;
 
 use Illuminate\Console\Command;
-use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookSubscriptionManager;
 use Shakewell\MindbodyLaravel\Exceptions\WebhookException;
+use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookSubscriptionManager;
 
 /**
- * Command to subscribe to Mindbody webhooks
+ * Command to subscribe to Mindbody webhooks.
  */
 class SubscribeWebhooksCommand extends Command
 {
-    protected $signature = 'mindbody:subscribe-webhooks 
+    protected $signature = 'mindbody:subscribe-webhooks
                            {--event=* : Specific event types to subscribe to}
                            {--all : Subscribe to all available events}
                            {--url= : Override webhook URL}
@@ -41,8 +40,9 @@ class SubscribeWebhooksCommand extends Command
 
         // Get webhook configuration
         $webhookUrl = $this->getWebhookUrl();
-        if (!$webhookUrl) {
+        if (! $webhookUrl) {
             $this->error('❌ No webhook URL configured or provided');
+
             return Command::FAILURE;
         }
 
@@ -53,6 +53,7 @@ class SubscribeWebhooksCommand extends Command
         $events = $this->getEventsToSubscribe();
         if (empty($events)) {
             $this->error('❌ No events specified for subscription');
+
             return Command::FAILURE;
         }
 
@@ -60,8 +61,9 @@ class SubscribeWebhooksCommand extends Command
         $this->displayEvents($events);
 
         // Confirm subscription
-        if (!$this->option('dry-run') && !$this->confirmSubscription($events)) {
+        if (! $this->option('dry-run') && ! $this->confirmSubscription($events)) {
             $this->info('Subscription cancelled');
+
             return Command::SUCCESS;
         }
 
@@ -72,13 +74,13 @@ class SubscribeWebhooksCommand extends Command
     protected function getWebhookUrl(): ?string
     {
         $url = $this->option('url') ?: config('mindbody.webhooks.url');
-        
-        if (!$url) {
+
+        if (! $url) {
             // Try to generate from app URL
             $appUrl = config('app.url');
             if ($appUrl) {
                 $routePrefix = config('mindbody.webhooks.route_prefix', 'mindbody/webhooks');
-                $url = rtrim($appUrl, '/') . '/' . ltrim($routePrefix, '/');
+                $url = rtrim($appUrl, '/').'/'.ltrim($routePrefix, '/');
             }
         }
 
@@ -92,7 +94,7 @@ class SubscribeWebhooksCommand extends Command
         }
 
         $specifiedEvents = $this->option('event');
-        if (!empty($specifiedEvents)) {
+        if (! empty($specifiedEvents)) {
             return $specifiedEvents;
         }
 
@@ -115,7 +117,8 @@ class SubscribeWebhooksCommand extends Command
             return true;
         }
 
-        $count = count($events);
+        $count = \count($events);
+
         return $this->confirm("Subscribe to {$count} webhook event(s)?");
     }
 
@@ -133,26 +136,26 @@ class SubscribeWebhooksCommand extends Command
 
             try {
                 $subscription = $this->subscriptionManager->subscribe($eventType, $webhookUrl);
-                
+
                 $this->info("✅ Subscribed to {$eventType}");
                 $this->line("   Subscription ID: {$subscription['Id']}");
                 $successCount++;
-                
             } catch (WebhookException $e) {
-                $this->error("❌ Failed to subscribe to {$eventType}: " . $e->getMessage());
+                $this->error("❌ Failed to subscribe to {$eventType}: ".$e->getMessage());
                 $failureCount++;
             } catch (\Exception $e) {
-                $this->error("❌ Error subscribing to {$eventType}: " . $e->getMessage());
+                $this->error("❌ Error subscribing to {$eventType}: ".$e->getMessage());
                 $failureCount++;
             }
         }
 
         $this->newLine();
-        $this->info("Subscription complete:");
+        $this->info('Subscription complete:');
         $this->line("  ✅ Successful: {$successCount}");
-        
+
         if ($failureCount > 0) {
             $this->line("  ❌ Failed: {$failureCount}");
+
             return Command::FAILURE;
         }
 

@@ -1,19 +1,18 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Commands;
 
 use Illuminate\Console\Command;
-use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookSubscriptionManager;
 use Shakewell\MindbodyLaravel\Exceptions\WebhookException;
+use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookSubscriptionManager;
 
 /**
- * Command to list current Mindbody webhook subscriptions
+ * Command to list current Mindbody webhook subscriptions.
  */
 class ListWebhookSubscriptionsCommand extends Command
 {
-    protected $signature = 'mindbody:list-webhooks 
+    protected $signature = 'mindbody:list-webhooks
                            {--format=table : Output format (table|json|csv)}
                            {--filter= : Filter by event type}
                            {--status= : Filter by status (active|inactive|all)}';
@@ -36,15 +35,18 @@ class ListWebhookSubscriptionsCommand extends Command
         try {
             $subscriptions = $this->subscriptionManager->getSubscriptions();
         } catch (WebhookException $e) {
-            $this->error("Failed to retrieve subscriptions: " . $e->getMessage());
+            $this->error('Failed to retrieve subscriptions: '.$e->getMessage());
+
             return Command::FAILURE;
         } catch (\Exception $e) {
-            $this->error("Error retrieving subscriptions: " . $e->getMessage());
+            $this->error('Error retrieving subscriptions: '.$e->getMessage());
+
             return Command::FAILURE;
         }
 
         if (empty($subscriptions)) {
             $this->info('No webhook subscriptions found');
+
             return Command::SUCCESS;
         }
 
@@ -53,6 +55,7 @@ class ListWebhookSubscriptionsCommand extends Command
 
         if (empty($subscriptions)) {
             $this->info('No subscriptions match the specified filters');
+
             return Command::SUCCESS;
         }
 
@@ -71,15 +74,16 @@ class ListWebhookSubscriptionsCommand extends Command
 
         // Filter by event type
         if ($eventFilter) {
-            $filtered = array_filter($filtered, function ($subscription) use ($eventFilter) {
-                return stripos($subscription['EventType'], $eventFilter) !== false;
+            $filtered = array_filter($filtered, static function ($subscription) use ($eventFilter) {
+                return false !== stripos($subscription['EventType'], $eventFilter);
             });
         }
 
         // Filter by status
-        if ($statusFilter && $statusFilter !== 'all') {
-            $filtered = array_filter($filtered, function ($subscription) use ($statusFilter) {
+        if ($statusFilter && 'all' !== $statusFilter) {
+            $filtered = array_filter($filtered, static function ($subscription) use ($statusFilter) {
                 $status = strtolower($subscription['Status'] ?? 'active');
+
                 return $status === strtolower($statusFilter);
             });
         }
@@ -123,7 +127,7 @@ class ListWebhookSubscriptionsCommand extends Command
 
         $this->table($headers, $rows);
         $this->newLine();
-        $this->info("Total subscriptions: " . count($subscriptions));
+        $this->info('Total subscriptions: '.\count($subscriptions));
     }
 
     protected function displayAsJson(array $subscriptions): void
@@ -141,7 +145,7 @@ class ListWebhookSubscriptionsCommand extends Command
                 $subscription['Id'],
                 $subscription['EventType'],
                 $subscription['Status'] ?? 'Active',
-                '"' . ($subscription['WebhookUrl'] ?? '') . '"',
+                '"'.($subscription['WebhookUrl'] ?? '').'"',
                 $subscription['CreatedDateTime'] ?? '',
                 $subscription['UpdatedDateTime'] ?? '',
             ];
@@ -151,16 +155,16 @@ class ListWebhookSubscriptionsCommand extends Command
 
     protected function truncateUrl(string $url, int $maxLength = 50): string
     {
-        if (strlen($url) <= $maxLength) {
+        if (\strlen($url) <= $maxLength) {
             return $url;
         }
 
-        return substr($url, 0, $maxLength - 3) . '...';
+        return substr($url, 0, $maxLength - 3).'...';
     }
 
     protected function formatDate(?string $dateString): string
     {
-        if (!$dateString) {
+        if (! $dateString) {
             return 'N/A';
         }
 

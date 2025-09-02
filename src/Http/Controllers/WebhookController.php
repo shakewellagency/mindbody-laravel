@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
@@ -12,7 +11,7 @@ use Shakewell\MindbodyLaravel\Exceptions\WebhookValidationException;
 use Shakewell\MindbodyLaravel\Services\Webhooks\WebhookHandler;
 
 /**
- * Controller for handling incoming webhooks from Mindbody
+ * Controller for handling incoming webhooks from Mindbody.
  */
 class WebhookController extends Controller
 {
@@ -24,7 +23,7 @@ class WebhookController extends Controller
     }
 
     /**
-     * Handle incoming webhook requests
+     * Handle incoming webhook requests.
      */
     public function handle(Request $request): JsonResponse
     {
@@ -46,7 +45,6 @@ class WebhookController extends Controller
                 'event_id' => $webhookEvent->event_id,
                 'event_type' => $webhookEvent->event_type,
             ], 200);
-
         } catch (WebhookValidationException $e) {
             // Log validation errors
             $this->logError('Webhook validation failed', [
@@ -60,7 +58,6 @@ class WebhookController extends Controller
                 'error' => 'Webhook validation failed',
                 'message' => $e->getMessage(),
             ], 400);
-
         } catch (\Exception $e) {
             // Log unexpected errors
             $this->logError('Webhook processing failed', [
@@ -79,7 +76,7 @@ class WebhookController extends Controller
     }
 
     /**
-     * Health check endpoint for webhook connectivity testing
+     * Health check endpoint for webhook connectivity testing.
      */
     public function health(): JsonResponse
     {
@@ -92,19 +89,19 @@ class WebhookController extends Controller
     }
 
     /**
-     * Get webhook statistics (if enabled)
+     * Get webhook statistics (if enabled).
      */
     public function stats(): JsonResponse
     {
-        if (!config('mindbody.webhooks.expose_stats', false)) {
+        if (! config('mindbody.webhooks.expose_stats', false)) {
             return response()->json([
-                'error' => 'Statistics endpoint not enabled'
+                'error' => 'Statistics endpoint not enabled',
             ], 404);
         }
 
         try {
             $stats = $this->webhookHandler->getStats();
-            
+
             return response()->json([
                 'stats' => $stats,
                 'timestamp' => now()->toIso8601String(),
@@ -118,14 +115,14 @@ class WebhookController extends Controller
     }
 
     /**
-     * Test endpoint for webhook connectivity
+     * Test endpoint for webhook connectivity.
      */
     public function test(Request $request): JsonResponse
     {
         // Only allow test requests from localhost or configured IPs
-        if (!$this->isTestRequestAllowed($request)) {
+        if (! $this->isTestRequestAllowed($request)) {
             return response()->json([
-                'error' => 'Test endpoint access denied'
+                'error' => 'Test endpoint access denied',
             ], 403);
         }
 
@@ -149,28 +146,28 @@ class WebhookController extends Controller
     }
 
     /**
-     * Check if test requests are allowed from this IP
+     * Check if test requests are allowed from this IP.
      */
     protected function isTestRequestAllowed(Request $request): bool
     {
         $allowedIps = config('mindbody.webhooks.test_allowed_ips', ['127.0.0.1', '::1']);
         $requestIp = $request->ip();
 
-        return in_array($requestIp, $allowedIps, true) || 
-               $this->isLocalhost($requestIp) ||
-               app()->environment('testing');
+        return \in_array($requestIp, $allowedIps, true)
+               || $this->isLocalhost($requestIp)
+               || app()->environment('testing');
     }
 
     /**
-     * Check if IP is localhost
+     * Check if IP is localhost.
      */
     protected function isLocalhost(string $ip): bool
     {
-        return in_array($ip, ['127.0.0.1', '::1', 'localhost'], true);
+        return \in_array($ip, ['127.0.0.1', '::1', 'localhost'], true);
     }
 
     /**
-     * Sanitize headers for logging (remove sensitive data)
+     * Sanitize headers for logging (remove sensitive data).
      */
     protected function sanitizeHeaders(array $headers): array
     {
@@ -183,7 +180,7 @@ class WebhookController extends Controller
 
         $sanitized = [];
         foreach ($headers as $key => $value) {
-            if (in_array(strtolower($key), $sensitiveHeaders, true)) {
+            if (\in_array(strtolower($key), $sensitiveHeaders, true)) {
                 $sanitized[$key] = '[REDACTED]';
             } else {
                 $sanitized[$key] = $value;
@@ -194,12 +191,13 @@ class WebhookController extends Controller
     }
 
     /**
-     * Get package version
+     * Get package version.
      */
     protected function getPackageVersion(): string
     {
         try {
-            $composer = json_decode(file_get_contents(__DIR__ . '/../../../composer.json'), true);
+            $composer = json_decode(file_get_contents(__DIR__.'/../../../composer.json'), true);
+
             return $composer['version'] ?? 'dev';
         } catch (\Exception $e) {
             return 'unknown';
@@ -207,7 +205,7 @@ class WebhookController extends Controller
     }
 
     /**
-     * Log info message
+     * Log info message.
      */
     protected function logInfo(string $message, array $context = []): void
     {
@@ -218,7 +216,7 @@ class WebhookController extends Controller
     }
 
     /**
-     * Log error message
+     * Log error message.
      */
     protected function logError(string $message, array $context = []): void
     {

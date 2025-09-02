@@ -1,41 +1,38 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
-use Carbon\Carbon;
-
 /**
- * Client endpoint for managing clients/customers
+ * Client endpoint for managing clients/customers.
  */
 class ClientEndpoint extends BaseEndpoint
 {
     protected string $endpoint = 'client';
 
     /**
-     * Get all clients with optional filtering
+     * Get all clients with optional filtering.
      */
     public function all(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $results = $this->getAll('client/clients', $params);
-        
+
         return $this->transformRecords($results);
     }
 
     /**
-     * Find a specific client by ID
+     * Find a specific client by ID.
      */
     public function find(string $clientId): ?array
     {
         $response = $this->client->get('client/clients', [
-            'ClientIds' => [$clientId]
+            'ClientIds' => [$clientId],
         ]);
 
         $clients = $this->extractResultsFromResponse($response);
-        
+
         if (empty($clients)) {
             return null;
         }
@@ -44,7 +41,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Find clients by multiple IDs
+     * Find clients by multiple IDs.
      */
     public function findMany(array $clientIds): array
     {
@@ -53,16 +50,16 @@ class ClientEndpoint extends BaseEndpoint
         }
 
         $response = $this->client->get('client/clients', [
-            'ClientIds' => $clientIds
+            'ClientIds' => $clientIds,
         ]);
 
         $clients = $this->extractResultsFromResponse($response);
-        
+
         return $this->transformRecords($clients);
     }
 
     /**
-     * Search for clients by various criteria
+     * Search for clients by various criteria.
      */
     public function search(array $criteria = []): array
     {
@@ -72,15 +69,15 @@ class ClientEndpoint extends BaseEndpoint
         if (isset($criteria['email'])) {
             $params['SearchText'] = $criteria['email'];
         }
-        
+
         if (isset($criteria['first_name'])) {
             $params['FirstName'] = $criteria['first_name'];
         }
-        
+
         if (isset($criteria['last_name'])) {
             $params['LastName'] = $criteria['last_name'];
         }
-        
+
         if (isset($criteria['phone'])) {
             $params['SearchText'] = $criteria['phone'];
         }
@@ -98,21 +95,21 @@ class ClientEndpoint extends BaseEndpoint
         }
 
         $params = $this->prepareParams($params);
-        
+
         $results = $this->getAll('client/clients', $params);
-        
+
         return $this->transformRecords($results);
     }
 
     /**
-     * Create a new client
+     * Create a new client.
      */
     public function create(array $data): array
     {
         $this->validateRequired($data, ['FirstName', 'LastName']);
-        
+
         $clientData = $this->validateClientData($data);
-        
+
         $response = $this->client->post('client/addclient', [
             'Client' => $clientData,
             'SendAccountEmails' => $data['SendAccountEmails'] ?? true,
@@ -131,7 +128,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Update an existing client
+     * Update an existing client.
      */
     public function update(string $clientId, array $data): array
     {
@@ -144,6 +141,7 @@ class ClientEndpoint extends BaseEndpoint
 
         if (isset($response['Client'])) {
             $this->clearCache();
+
             return $this->transformRecord($response['Client']);
         }
 
@@ -151,7 +149,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get client purchases (packages, memberships, services)
+     * Get client purchases (packages, memberships, services).
      */
     public function purchases(string $clientId, array $params = []): array
     {
@@ -175,7 +173,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get client services (active memberships, packages, etc.)
+     * Get client services (active memberships, packages, etc.).
      */
     public function services(string $clientId, array $params = []): array
     {
@@ -189,7 +187,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get client visit history
+     * Get client visit history.
      */
     public function visits(string $clientId, array $params = []): array
     {
@@ -213,7 +211,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get client schedule (upcoming appointments and classes)
+     * Get client schedule (upcoming appointments and classes).
      */
     public function schedule(string $clientId, array $params = []): array
     {
@@ -240,7 +238,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get required client fields for the site
+     * Get required client fields for the site.
      */
     public function requiredFields(): array
     {
@@ -250,7 +248,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get active client memberships
+     * Get active client memberships.
      */
     public function memberships(string $clientId): array
     {
@@ -263,7 +261,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get client contracts
+     * Get client contracts.
      */
     public function contracts(string $clientId, array $params = []): array
     {
@@ -277,7 +275,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Add client to a class or service
+     * Add client to a class or service.
      */
     public function addToClass(string $clientId, int $classId, array $options = []): array
     {
@@ -292,7 +290,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Remove client from a class
+     * Remove client from a class.
      */
     public function removeFromClass(string $clientId, int $classId, bool $sendEmail = true): array
     {
@@ -304,7 +302,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get client's current account balance
+     * Get client's current account balance.
      */
     public function balance(string $clientId): array
     {
@@ -313,12 +311,12 @@ class ClientEndpoint extends BaseEndpoint
         ]);
 
         $balances = $response['ClientAccountBalances'] ?? [];
-        
+
         return $balances[0] ?? [];
     }
 
     /**
-     * Deactivate a client
+     * Deactivate a client.
      */
     public function deactivate(string $clientId): array
     {
@@ -326,7 +324,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Reactivate a client
+     * Reactivate a client.
      */
     public function reactivate(string $clientId): array
     {
@@ -334,7 +332,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Upload a profile photo for the client
+     * Upload a profile photo for the client.
      */
     public function uploadPhoto(string $clientId, string $photoData): array
     {
@@ -345,7 +343,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Extract results from response
+     * Extract results from response.
      */
     protected function extractResultsFromResponse(array $response): array
     {
@@ -353,7 +351,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Validate and prepare client data
+     * Validate and prepare client data.
      */
     protected function validateClientData(array $data): array
     {
@@ -394,7 +392,7 @@ class ClientEndpoint extends BaseEndpoint
         ];
 
         foreach ($fieldMappings as $alias => $field) {
-            if (isset($data[$alias]) && !isset($data[$field])) {
+            if (isset($data[$alias]) && ! isset($data[$field])) {
                 $data[$field] = $data[$alias];
                 unset($data[$alias]);
             }
@@ -404,7 +402,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get date fields specific to clients
+     * Get date fields specific to clients.
      */
     protected function getDateFields(): array
     {
@@ -418,7 +416,7 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Process bulk client operations
+     * Process bulk client operations.
      */
     protected function processBulkBatch(string $operation, array $batch): array
     {
@@ -433,12 +431,12 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk create clients
+     * Bulk create clients.
      */
     protected function bulkCreate(array $clients): array
     {
         $results = [];
-        
+
         foreach ($clients as $clientData) {
             try {
                 $results[] = $this->create($clientData);
@@ -454,14 +452,14 @@ class ClientEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk update clients
+     * Bulk update clients.
      */
     protected function bulkUpdate(array $updates): array
     {
         $results = [];
-        
+
         foreach ($updates as $update) {
-            if (!isset($update['Id'])) {
+            if (! isset($update['Id'])) {
                 $results[] = [
                     'error' => 'Client ID is required for updates',
                     'data' => $update,

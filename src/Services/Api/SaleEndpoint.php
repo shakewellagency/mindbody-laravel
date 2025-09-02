@@ -1,41 +1,40 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 use Carbon\Carbon;
 
 /**
- * Sale endpoint for managing sales, payments, and purchases
+ * Sale endpoint for managing sales, payments, and purchases.
  */
 class SaleEndpoint extends BaseEndpoint
 {
     protected string $endpoint = 'sale';
 
     /**
-     * Get all sales with optional filtering
+     * Get all sales with optional filtering.
      */
     public function all(array $params = []): array
     {
         $params = $this->prepareSaleParams($params);
-        
+
         $results = $this->getAll('sale/sales', $params);
-        
+
         return $this->transformRecords($results);
     }
 
     /**
-     * Find a specific sale by ID
+     * Find a specific sale by ID.
      */
     public function find(int $saleId): ?array
     {
         $response = $this->client->get('sale/sales', [
-            'SaleIds' => [$saleId]
+            'SaleIds' => [$saleId],
         ]);
 
         $sales = $this->extractResultsFromResponse($response);
-        
+
         if (empty($sales)) {
             return null;
         }
@@ -44,7 +43,7 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Find sales by multiple IDs
+     * Find sales by multiple IDs.
      */
     public function findMany(array $saleIds): array
     {
@@ -53,27 +52,27 @@ class SaleEndpoint extends BaseEndpoint
         }
 
         $response = $this->client->get('sale/sales', [
-            'SaleIds' => $saleIds
+            'SaleIds' => $saleIds,
         ]);
 
         $sales = $this->extractResultsFromResponse($response);
-        
+
         return $this->transformRecords($sales);
     }
 
     /**
-     * Process a new sale/checkout
+     * Process a new sale/checkout.
      */
     public function checkout(array $data): array
     {
         $this->validateRequired($data, ['ClientId', 'Items']);
-        
+
         $saleData = $this->validateSaleData($data);
-        
+
         $response = $this->client->post('sale/checkoutshoppingcart', $saleData);
-        
+
         $this->clearCache();
-        
+
         if (isset($response['ShoppingSale'])) {
             return $this->transformRecord($response['ShoppingSale']);
         }
@@ -82,7 +81,7 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get sales for a specific date range
+     * Get sales for a specific date range.
      */
     public function forDateRange(Carbon $startDate, Carbon $endDate, array $params = []): array
     {
@@ -95,45 +94,48 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get today's sales
+     * Get today's sales.
      */
     public function today(array $params = []): array
     {
         $today = Carbon::today();
+
         return $this->forDateRange($today, $today->copy()->endOfDay(), $params);
     }
 
     /**
-     * Get this week's sales
+     * Get this week's sales.
      */
     public function thisWeek(array $params = []): array
     {
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
-        
+
         return $this->forDateRange($startOfWeek, $endOfWeek, $params);
     }
 
     /**
-     * Get sales by client
+     * Get sales by client.
      */
     public function byClient(string $clientId, array $params = []): array
     {
         $params['ClientId'] = $clientId;
+
         return $this->all($params);
     }
 
     /**
-     * Get sales by location
+     * Get sales by location.
      */
     public function byLocation(int $locationId, array $params = []): array
     {
         $params['LocationId'] = $locationId;
+
         return $this->all($params);
     }
 
     /**
-     * Search sales by various criteria
+     * Search sales by various criteria.
      */
     public function search(array $criteria = []): array
     {
@@ -171,99 +173,99 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get available products
+     * Get available products.
      */
     public function products(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $response = $this->client->get('sale/products', $params);
-        
+
         return $response['Products'] ?? [];
     }
 
     /**
-     * Get available services (packages, memberships, etc.)
+     * Get available services (packages, memberships, etc.).
      */
     public function services(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $response = $this->client->get('sale/services', $params);
-        
+
         return $response['Services'] ?? [];
     }
 
     /**
-     * Get available packages
+     * Get available packages.
      */
     public function packages(array $params = []): array
     {
         $params = array_merge($params, ['SellOnline' => true]);
-        
+
         $services = $this->services($params);
-        
+
         // Filter for packages
-        return array_filter($services, function ($service) {
+        return array_filter($services, static function ($service) {
             return ($service['Type'] ?? '') === 'Package';
         });
     }
 
     /**
-     * Get available memberships
+     * Get available memberships.
      */
     public function memberships(array $params = []): array
     {
         $params = array_merge($params, ['SellOnline' => true]);
-        
+
         $services = $this->services($params);
-        
+
         // Filter for memberships
-        return array_filter($services, function ($service) {
+        return array_filter($services, static function ($service) {
             return ($service['Type'] ?? '') === 'Membership';
         });
     }
 
     /**
-     * Get gift cards
+     * Get gift cards.
      */
     public function giftCards(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $response = $this->client->get('sale/giftcards', $params);
-        
+
         return $response['GiftCards'] ?? [];
     }
 
     /**
-     * Purchase a gift card
+     * Purchase a gift card.
      */
     public function purchaseGiftCard(array $data): array
     {
         $this->validateRequired($data, ['RecipientName', 'Value']);
-        
+
         $response = $this->client->post('sale/purchasegiftcard', $data);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Get contracts
+     * Get contracts.
      */
     public function contracts(array $params = []): array
     {
         $params = $this->prepareParams($params);
-        
+
         $response = $this->client->get('sale/contracts', $params);
-        
+
         return $response['Contracts'] ?? [];
     }
 
     /**
-     * Process a return/refund
+     * Process a return/refund.
      */
     public function processReturn(int $saleId, array $items, string $reason = ''): array
     {
@@ -274,38 +276,38 @@ class SaleEndpoint extends BaseEndpoint
         ];
 
         $response = $this->client->post('sale/returnsale', $data);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Get payment methods
+     * Get payment methods.
      */
     public function paymentMethods(): array
     {
         $response = $this->client->get('sale/paymentmethods');
-        
+
         return $response['PaymentMethods'] ?? [];
     }
 
     /**
-     * Process a custom payment
+     * Process a custom payment.
      */
     public function processCustomPayment(array $data): array
     {
         $this->validateRequired($data, ['ClientId', 'Amount', 'PaymentMethodId']);
-        
+
         $response = $this->client->post('sale/custompayment', $data);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Update a sale
+     * Update a sale.
      */
     public function update(int $saleId, array $data): array
     {
@@ -313,7 +315,7 @@ class SaleEndpoint extends BaseEndpoint
         $saleData['Id'] = $saleId;
 
         $response = $this->client->post('sale/updatesale', $saleData);
-        
+
         $this->clearCache();
 
         if (isset($response['Sale'])) {
@@ -324,7 +326,7 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get sale summary/statistics
+     * Get sale summary/statistics.
      */
     public function summary(Carbon $startDate, Carbon $endDate, array $params = []): array
     {
@@ -333,13 +335,11 @@ class SaleEndpoint extends BaseEndpoint
             'EndDate' => $this->formatDateOnly($endDate),
         ]);
 
-        $response = $this->client->get('sale/salesummary', $params);
-        
-        return $response;
+        return $this->client->get('sale/salesummary', $params);
     }
 
     /**
-     * Get transactions for a specific sale
+     * Get transactions for a specific sale.
      */
     public function transactions(int $saleId): array
     {
@@ -351,19 +351,19 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get refunds/returns
+     * Get refunds/returns.
      */
     public function returns(array $params = []): array
     {
         $params = $this->prepareSaleParams($params);
-        
+
         $response = $this->client->get('sale/returns', $params);
-        
+
         return $response['Returns'] ?? [];
     }
 
     /**
-     * Void a sale
+     * Void a sale.
      */
     public function void(int $saleId, string $reason = ''): array
     {
@@ -371,26 +371,26 @@ class SaleEndpoint extends BaseEndpoint
             'SaleId' => $saleId,
             'VoidReason' => $reason,
         ]);
-        
+
         $this->clearCache();
-        
+
         return $response;
     }
 
     /**
-     * Get sales tax information
+     * Get sales tax information.
      */
     public function taxInfo(array $params = []): array
     {
         $response = $this->client->get('sale/taxinfo', $params);
-        
+
         return $response['TaxInfo'] ?? [];
     }
 
     /**
-     * Calculate tax for items
+     * Calculate tax for items.
      */
-    public function calculateTax(array $items, string $clientId = null): array
+    public function calculateTax(array $items, ?string $clientId = null): array
     {
         $data = [
             'Items' => $items,
@@ -400,23 +400,21 @@ class SaleEndpoint extends BaseEndpoint
             $data['ClientId'] = $clientId;
         }
 
-        $response = $this->client->post('sale/calculatetax', $data);
-        
-        return $response;
+        return $this->client->post('sale/calculatetax', $data);
     }
 
     /**
-     * Get discounts
+     * Get discounts.
      */
     public function discounts(array $params = []): array
     {
         $response = $this->client->get('sale/discounts', $params);
-        
+
         return $response['Discounts'] ?? [];
     }
 
     /**
-     * Apply discount to items
+     * Apply discount to items.
      */
     public function applyDiscount(array $items, string $discountCode): array
     {
@@ -425,13 +423,11 @@ class SaleEndpoint extends BaseEndpoint
             'DiscountCode' => $discountCode,
         ];
 
-        $response = $this->client->post('sale/applydiscount', $data);
-        
-        return $response;
+        return $this->client->post('sale/applydiscount', $data);
     }
 
     /**
-     * Extract results from API response
+     * Extract results from API response.
      */
     protected function extractResultsFromResponse(array $response): array
     {
@@ -439,16 +435,16 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Prepare sale-specific parameters
+     * Prepare sale-specific parameters.
      */
     protected function prepareSaleParams(array $params): array
     {
         // Set default date range if not provided
-        if (!isset($params['StartSaleDateTime']) && !isset($params['start_date'])) {
+        if (! isset($params['StartSaleDateTime']) && ! isset($params['start_date'])) {
             $params['StartSaleDateTime'] = Carbon::now()->subDays(7)->toIso8601String();
         }
 
-        if (!isset($params['EndSaleDateTime']) && !isset($params['end_date'])) {
+        if (! isset($params['EndSaleDateTime']) && ! isset($params['end_date'])) {
             $params['EndSaleDateTime'] = Carbon::now()->toIso8601String();
         }
 
@@ -466,7 +462,7 @@ class SaleEndpoint extends BaseEndpoint
         // Handle array parameters
         $arrayParams = ['SaleIds', 'LocationIds'];
         foreach ($arrayParams as $param) {
-            if (isset($params[$param]) && !is_array($params[$param])) {
+            if (isset($params[$param]) && ! \is_array($params[$param])) {
                 $params[$param] = [$params[$param]];
             }
         }
@@ -475,7 +471,7 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Validate and prepare sale data
+     * Validate and prepare sale data.
      */
     protected function validateSaleData(array $data): array
     {
@@ -491,21 +487,21 @@ class SaleEndpoint extends BaseEndpoint
         ];
 
         foreach ($fieldMappings as $alias => $field) {
-            if (isset($data[$alias]) && !isset($data[$field])) {
+            if (isset($data[$alias]) && ! isset($data[$field])) {
                 $data[$field] = $data[$alias];
                 unset($data[$alias]);
             }
         }
 
         // Validate items structure
-        if (isset($data['Items']) && is_array($data['Items'])) {
+        if (isset($data['Items']) && \is_array($data['Items'])) {
             foreach ($data['Items'] as &$item) {
-                if (isset($item['service_id']) && !isset($item['Item']['Id'])) {
+                if (isset($item['service_id']) && ! isset($item['Item']['Id'])) {
                     $item['Item']['Id'] = $item['service_id'];
                     unset($item['service_id']);
                 }
-                
-                if (isset($item['quantity']) && !isset($item['Quantity'])) {
+
+                if (isset($item['quantity']) && ! isset($item['Quantity'])) {
                     $item['Quantity'] = $item['quantity'];
                     unset($item['quantity']);
                 }
@@ -516,7 +512,7 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Get date fields specific to sales
+     * Get date fields specific to sales.
      */
     protected function getDateFields(): array
     {
@@ -531,7 +527,7 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Process bulk sale operations
+     * Process bulk sale operations.
      */
     protected function processBulkBatch(string $operation, array $batch): array
     {
@@ -546,12 +542,12 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk process checkouts
+     * Bulk process checkouts.
      */
     protected function bulkCheckout(array $sales): array
     {
         $results = [];
-        
+
         foreach ($sales as $saleData) {
             try {
                 $results[] = $this->checkout($saleData);
@@ -568,14 +564,14 @@ class SaleEndpoint extends BaseEndpoint
     }
 
     /**
-     * Bulk process returns
+     * Bulk process returns.
      */
     protected function bulkReturn(array $returns): array
     {
         $results = [];
-        
+
         foreach ($returns as $returnData) {
-            if (!isset($returnData['sale_id'], $returnData['items'])) {
+            if (! isset($returnData['sale_id'], $returnData['items'])) {
                 $results[] = [
                     'success' => false,
                     'error' => 'sale_id and items are required',
