@@ -25,23 +25,17 @@ final class SimpleClientTest extends TestCase
 
     public function testItHasRequiredEndpoints(): void
     {
-        $client = $this->client->client();
-        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\ClientEndpoint::class, $client);
+        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\ClientEndpoint::class, $this->client->client);
 
-        $class = $this->client->class();
-        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\ClassEndpoint::class, $class);
+        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\ClassEndpoint::class, $this->client->class);
 
-        $appointment = $this->client->appointment();
-        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\AppointmentEndpoint::class, $appointment);
+        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\AppointmentEndpoint::class, $this->client->appointment);
 
-        $sale = $this->client->sale();
-        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\SaleEndpoint::class, $sale);
+        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\SaleEndpoint::class, $this->client->sale);
 
-        $staff = $this->client->staff();
-        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\StaffEndpoint::class, $staff);
+        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\StaffEndpoint::class, $this->client->staff);
 
-        $site = $this->client->site();
-        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\SiteEndpoint::class, $site);
+        self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\SiteEndpoint::class, $this->client->site);
     }
 
     public function testItHasExceptionClasses(): void
