@@ -29,18 +29,16 @@ class WebhookEventFactory extends Factory
 
         return [
             'event_id' => 'event_' . $this->faker->uuid(),
-            'message_id' => 'msg_' . $this->faker->uuid(),
             'event_type' => $this->faker->randomElement($eventTypes),
-            'event_instance_id' => 'instance_' . $this->faker->uuid(),
-            'event_schema_version' => 1,
-            'event_occurred_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
-            'site_id' => 'site_' . $this->faker->randomNumber(5),
-            'payload' => $this->generatePayload(),
-            'status' => $this->faker->randomElement(['pending', 'processed', 'failed']),
-            'retry_count' => 0,
-            'error_message' => null,
+            'site_id' => (string) $this->faker->randomNumber(5),
+            'event_data' => $this->generatePayload(),
+            'headers' => null,
+            'event_timestamp' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'processed' => false,
             'processed_at' => null,
-            'next_retry_at' => null,
+            'retry_count' => 0,
+            'error' => null,
+            'signature' => null,
             'created_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
             'updated_at' => function (array $attributes) {
                 return $attributes['created_at'];
@@ -51,27 +49,27 @@ class WebhookEventFactory extends Factory
     public function pending(): self
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'pending',
+            'processed' => false,
             'processed_at' => null,
-            'error_message' => null,
+            'error' => null,
         ]);
     }
 
     public function processed(): self
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'processed',
+            'processed' => true,
             'processed_at' => $this->faker->dateTimeBetween($attributes['created_at'], 'now'),
-            'error_message' => null,
+            'error' => null,
         ]);
     }
 
     public function failed(): self
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'failed',
-            'processed_at' => $this->faker->dateTimeBetween($attributes['created_at'], 'now'),
-            'error_message' => $this->faker->sentence(),
+            'processed' => false,
+            'processed_at' => null,
+            'error' => $this->faker->sentence(),
             'retry_count' => $this->faker->numberBetween(1, 3),
         ]);
     }
@@ -80,7 +78,7 @@ class WebhookEventFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'event_type' => 'appointment.booked',
-            'payload' => $this->generateAppointmentPayload(),
+            'event_data' => $this->generateAppointmentPayload(),
         ]);
     }
 
@@ -88,7 +86,7 @@ class WebhookEventFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'event_type' => 'client.created',
-            'payload' => $this->generateClientPayload(),
+            'event_data' => $this->generateClientPayload(),
         ]);
     }
 
@@ -96,7 +94,7 @@ class WebhookEventFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'event_type' => 'class.booked',
-            'payload' => $this->generateClassPayload(),
+            'event_data' => $this->generateClassPayload(),
         ]);
     }
 

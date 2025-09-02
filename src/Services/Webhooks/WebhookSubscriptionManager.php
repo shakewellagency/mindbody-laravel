@@ -106,6 +106,42 @@ class WebhookSubscriptionManager
     }
 
     /**
+     * Get all webhook subscriptions (alias for list method).
+     */
+    public function getSubscriptions(bool $useCache = true): array
+    {
+        return $this->list($useCache);
+    }
+
+    /**
+     * Get available webhook event types.
+     */
+    public function getAvailableEvents(): array
+    {
+        return [
+            'appointment.booked',
+            'appointment.cancelled',
+            'appointment.rescheduled',
+            'appointment.confirmed',
+            'client.created',
+            'client.updated',
+            'client.deactivated',
+            'class.booked',
+            'class.cancelled',
+            'class.waitlisted',
+            'enrollment.created',
+            'enrollment.cancelled',
+            'payment.processed',
+            'payment.failed',
+            'product.purchased',
+            'service.purchased',
+            'staff.created',
+            'staff.updated',
+            'staff.deactivated',
+        ];
+    }
+
+    /**
      * Get a specific subscription by ID.
      */
     public function get(string $subscriptionId): array
@@ -190,6 +226,14 @@ class WebhookSubscriptionManager
         }
 
         return $success;
+    }
+
+    /**
+     * Unsubscribe from a webhook subscription (alias for delete method).
+     */
+    public function unsubscribe(string $subscriptionId): bool
+    {
+        return $this->delete($subscriptionId);
     }
 
     /**
