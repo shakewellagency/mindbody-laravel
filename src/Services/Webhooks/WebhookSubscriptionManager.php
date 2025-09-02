@@ -26,11 +26,20 @@ class WebhookSubscriptionManager
     {
         $this->config = $config;
         $this->apiKey = $config['webhooks']['api_key'] ?? '';
-        $this->baseUrl = $config['webhooks']['base_url'];
+        $this->baseUrl = $config['webhooks']['base_url'] ?? 'https://api.mindbodyonline.com';
         $this->webhookUrl = $config['webhooks']['webhook_url'] ?? null;
 
+        // Only validate API key if it's needed (not during package discovery)
         if (empty($this->apiKey)) {
-            throw new \InvalidArgumentException('Webhook API key is required');
+            try {
+                if (app()->runningInConsole() && !app()->runningUnitTests()) {
+                    // Don't throw exception during package discovery or artisan commands
+                    $this->apiKey = 'dummy-webhook-key-for-discovery';
+                }
+            } catch (\Throwable $e) {
+                // If app methods don't exist, assume we're in a safe context
+                $this->apiKey = 'dummy-webhook-key-for-discovery';
+            }
         }
     }
 

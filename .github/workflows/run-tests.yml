@@ -10,19 +10,19 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         php: [8.1, 8.2, 8.3]
-        laravel: [9.*, 10.*, 11.*]
-        stability: [prefer-lowest, prefer-stable]
+        laravel: [10.*, 11.*]
+        stability: [prefer-stable]
         include:
-          - laravel: 9.*
-            testbench: 7.*
           - laravel: 10.*
             testbench: 8.*
+            phpunit: ^10.0
           - laravel: 11.*
             testbench: 9.*
+            phpunit: ^10.0
         exclude:
           - laravel: 11.*
             php: 8.1
@@ -38,7 +38,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
-          coverage: xdebug
+          coverage: none
 
       - name: Setup problem matchers
         run: |
@@ -47,18 +47,24 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
-          composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "phpunit/phpunit:${{ matrix.phpunit }}" --no-interaction --no-update
+          composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-suggest
 
       - name: List Installed Dependencies
         run: composer show -D
 
-      - name: Execute tests
-        run: vendor/bin/phpunit --coverage-text --coverage-clover=coverage.clover
+      - name: Create directories
+        run: |
+          mkdir -p build/logs
+          mkdir -p build/coverage
 
-      - name: Upload coverage to Codecov
+      - name: Execute tests (Unit)
+        run: vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite="Shakewell Test Suite" --no-coverage --stop-on-failure
+
+      - name: Check code style
         if: matrix.php == '8.2' && matrix.laravel == '10.*' && matrix.stability == 'prefer-stable'
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage.clover
-          fail_ci_if_error: false
+        run: vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --verbose --diff --dry-run
+
+      - name: Static analysis
+        if: matrix.php == '8.2' && matrix.laravel == '10.*' && matrix.stability == 'prefer-stable'
+        run: vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --no-progress

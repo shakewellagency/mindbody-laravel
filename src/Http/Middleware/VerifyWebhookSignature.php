@@ -7,6 +7,7 @@ namespace Shakewell\MindbodyLaravel\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Illuminate\Support\Facades\Log;
 use Shakewell\MindbodyLaravel\Exceptions\WebhookValidationException;
 
@@ -18,7 +19,7 @@ class VerifyWebhookSignature
     /**
      * Handle an incoming request
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next): SymfonyResponse
     {
         if (!$this->shouldVerifySignature()) {
             return $next($request);

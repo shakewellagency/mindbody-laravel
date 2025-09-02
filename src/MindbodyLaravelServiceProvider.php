@@ -54,17 +54,20 @@ class MindbodyLaravelServiceProvider extends PackageServiceProvider
     {
         // Register the main client as singleton
         $this->app->singleton(MindbodyClient::class, function ($app) {
-            return new MindbodyClient($app['config']['mindbody']);
+            $config = $app['config']['mindbody'] ?? [];
+            return new MindbodyClient($config);
         });
 
         // Register webhook handler
         $this->app->singleton(WebhookHandler::class, function ($app) {
-            return new WebhookHandler($app['config']['mindbody']);
+            $config = $app['config']['mindbody'] ?? [];
+            return new WebhookHandler($config);
         });
 
         // Register webhook subscription manager
         $this->app->singleton(WebhookSubscriptionManager::class, function ($app) {
-            return new WebhookSubscriptionManager($app['config']['mindbody']);
+            $config = $app['config']['mindbody'] ?? [];
+            return new WebhookSubscriptionManager($config);
         });
 
         // Register facade aliases

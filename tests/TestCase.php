@@ -108,7 +108,7 @@ abstract class TestCase extends Orchestra
     /**
      * Create a webhook signature for testing
      */
-    protected function createWebhookSignature(string $payload, string $key = null): string
+    protected function createWebhookSignature(string $payload, ?string $key = null): string
     {
         $key = $key ?: config('mindbody.webhooks.signature_key');
         $hash = hash_hmac('sha256', $payload, $key);
