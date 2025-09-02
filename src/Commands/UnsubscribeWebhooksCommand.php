@@ -40,7 +40,7 @@ class UnsubscribeWebhooksCommand extends Command
 
         // Get current subscriptions
         try {
-            $subscriptions = $this->subscriptionManager->getSubscriptions();
+            $subscriptions = $this->subscriptionManager->list();
         } catch (\Exception $e) {
             $this->error('Failed to retrieve current subscriptions: '.$e->getMessage());
 
