@@ -59,7 +59,7 @@ jobs:
           mkdir -p build/coverage
 
       - name: Execute tests (Unit)
-        run: vendor/bin/phpunit --configuration phpunit.xml --testsuite="Mindbody Laravel Package Test Suite" --no-coverage --stop-on-failure
+        run: vendor/bin/phpunit --configuration phpunit.xml --testsuite="Mindbody Laravel Package Test Suite" --no-coverage --stop-on-failure tests/Unit
 
       - name: Check code style
         if: matrix.php == '8.2' && matrix.laravel == '10.*' && matrix.stability == 'prefer-stable'
