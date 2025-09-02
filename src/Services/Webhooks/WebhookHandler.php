@@ -330,7 +330,6 @@ class WebhookHandler
     {
         // This can be extended to create specific event classes for different webhook types
         // For now, we'll use the generic WebhookReceived event
-
     }
 
     /**
