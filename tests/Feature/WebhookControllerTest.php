@@ -5,8 +5,6 @@ namespace Shakewell\MindbodyLaravel\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Shakewell\MindbodyLaravel\Events\Webhooks\AppointmentBooked;
-use Shakewell\MindbodyLaravel\Models\WebhookEvent;
 use Shakewell\MindbodyLaravel\Tests\TestCase;
 
 /**
@@ -31,7 +29,7 @@ final class WebhookControllerTest extends TestCase
         ]);
 
         // Simplified test - webhook endpoint responds (may be 200, 400, or 401 depending on signature validation)
-        self::assertTrue(in_array($response->status(), [200, 400, 401], true));
+        self::assertTrue(\in_array($response->status(), [200, 400, 401], true));
     }
 
     public function testItRejectsWebhookWithInvalidSignature(): void
@@ -76,7 +74,7 @@ final class WebhookControllerTest extends TestCase
         $response = $this->postJson('/mindbody/webhooks', $payload);
 
         // Simplified test - webhook endpoint responds (may vary based on internal logic)
-        self::assertTrue(in_array($response->status(), [200, 400, 401], true));
+        self::assertTrue(\in_array($response->status(), [200, 400, 401], true));
     }
 
     public function testItHandlesDifferentSignatureHeaderFormats(): void
@@ -101,7 +99,7 @@ final class WebhookControllerTest extends TestCase
             ]);
 
             // Allow various status codes - webhook may return 200, 400, or 401 depending on validation
-            self::assertTrue(in_array($response->status(), [200, 400, 401], true));
+            self::assertTrue(\in_array($response->status(), [200, 400, 401], true));
         }
     }
 
@@ -123,8 +121,8 @@ final class WebhookControllerTest extends TestCase
         ]);
 
         // Simplified test - check responses were received (may be 200 or error codes)
-        self::assertTrue(in_array($response1->status(), [200, 400, 401], true));
-        self::assertTrue(in_array($response2->status(), [200, 400, 401], true));
+        self::assertTrue(\in_array($response1->status(), [200, 400, 401], true));
+        self::assertTrue(\in_array($response2->status(), [200, 400, 401], true));
     }
 
     public function testItProvidesHealthCheckEndpoint(): void
@@ -186,7 +184,7 @@ final class WebhookControllerTest extends TestCase
     public function testItHandlesMalformedJson(): void
     {
         // Simplified test - webhook endpoint exists
-        $this->assertTrue(true);
+        self::assertTrue(true);
     }
 
     public function testItLogsSecurityEvents(): void

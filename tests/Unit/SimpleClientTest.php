@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
@@ -10,6 +9,11 @@ use Shakewell\MindbodyLaravel\Exceptions\RateLimitException;
 use Shakewell\MindbodyLaravel\Exceptions\WebhookValidationException;
 use Shakewell\MindbodyLaravel\Services\MindbodyClient;
 
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
 final class SimpleClientTest extends TestCase
 {
     private MindbodyClient $client;
