@@ -10,12 +10,12 @@
         "fitness",
         "scheduling"
     ],
-    "homepage": "https://github.com/shakewell/mindbody-laravel",
+    "homepage": "https://github.com/shakewellagency/mindbody-laravel",
     "license": "MIT",
     "authors": [
         {
             "name": "Michael Chora",
-            "email": "michael@shakewell.co",
+            "email": "developers@shakewell.agency",
             "role": "Developer"
         }
     ],
