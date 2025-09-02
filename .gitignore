@@ -44,3 +44,13 @@ bootstrap/cache/
 
 # Package specific
 composer.lock
+
+# AI/Claude Code files
+.claude/
+.claude.md
+CLAUDE.md
+*claude*
+*ai_scripts*
+PROJECT_PLAN.md
+DEVELOPMENT_LOG.md
+AI_*.md
