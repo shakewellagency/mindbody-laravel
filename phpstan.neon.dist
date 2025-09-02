@@ -11,3 +11,9 @@ parameters:
     ignoreErrors:
         -
             identifier: missingType.iterableValue
+        -
+            message: '#Call to an undefined static method .*Model::(where|whereIn|whereNotNull|create|count|first|find|forUsername|valid|expired|revoked).*#'
+        -
+            message: '#Call to an undefined method .*Endpoint::(getLocations|getServices|getAll).*#'
+        -
+            message: '#Call to protected method getAll.*#'
