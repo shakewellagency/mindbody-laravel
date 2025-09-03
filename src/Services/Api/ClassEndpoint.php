@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 use Carbon\Carbon;
@@ -114,9 +115,11 @@ class ClassEndpoint extends BaseEndpoint
     {
         $params = $this->prepareParams($params);
 
-        $results = $this->getAll('class/classdescriptions', $params);
+        $response = $this->client->get('class/classdescriptions', $params);
 
-        return $this->transformRecords($results);
+        $descriptions = $response['ClassDescriptions'] ?? [];
+
+        return $this->transformRecords($descriptions);
     }
 
     /**
@@ -260,8 +263,8 @@ class ClassEndpoint extends BaseEndpoint
         $webBookings = $class['WebCapacity'] ?? 0;
         $totalWebBookings = $class['TotalWebBookings'] ?? 0;
 
-        $hasGeneralCapacity = 0 === $maxCapacity || $totalBookings < $maxCapacity;
-        $hasWebCapacity = 0 === $webBookings || $totalWebBookings < $webBookings;
+        $hasGeneralCapacity = $maxCapacity === 0 || $totalBookings < $maxCapacity;
+        $hasWebCapacity = $webBookings === 0 || $totalWebBookings < $webBookings;
 
         $isAvailable = $hasGeneralCapacity && $hasWebCapacity;
 
@@ -490,6 +493,7 @@ class ClassEndpoint extends BaseEndpoint
                     'error' => 'client_id and class_id are required',
                     'data' => $operation,
                 ];
+
                 continue;
             }
 
@@ -525,6 +529,7 @@ class ClassEndpoint extends BaseEndpoint
                     'error' => 'client_id and class_id are required',
                     'data' => $operation,
                 ];
+
                 continue;
             }
 

@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 use Carbon\Carbon;
@@ -19,7 +20,7 @@ class AppointmentEndpoint extends BaseEndpoint
     {
         $params = $this->prepareAppointmentParams($params);
 
-        $response = $this->client->get('appointment/appointments', $params);
+        $response = $this->client->get('appointments', $params);
 
         $appointments = $this->extractResultsFromResponse($response);
 
@@ -31,7 +32,7 @@ class AppointmentEndpoint extends BaseEndpoint
      */
     public function find(int $appointmentId): ?array
     {
-        $response = $this->client->get('appointment/appointments', [
+        $response = $this->client->get('appointments', [
             'AppointmentIds' => [$appointmentId],
         ]);
 
@@ -53,7 +54,7 @@ class AppointmentEndpoint extends BaseEndpoint
             return [];
         }
 
-        $response = $this->client->get('appointment/appointments', [
+        $response = $this->client->get('appointments', [
             'AppointmentIds' => $appointmentIds,
         ]);
 
@@ -567,6 +568,7 @@ class AppointmentEndpoint extends BaseEndpoint
                     'error' => 'appointment_id is required',
                     'data' => $cancellation,
                 ];
+
                 continue;
             }
 
@@ -602,6 +604,7 @@ class AppointmentEndpoint extends BaseEndpoint
                     'error' => 'appointment_id is required',
                     'data' => $update,
                 ];
+
                 continue;
             }
 
