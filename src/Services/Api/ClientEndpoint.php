@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 /**
@@ -464,6 +465,7 @@ class ClientEndpoint extends BaseEndpoint
                     'error' => 'Client ID is required for updates',
                     'data' => $update,
                 ];
+
                 continue;
             }
 

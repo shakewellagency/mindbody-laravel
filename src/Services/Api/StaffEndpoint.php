@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 use Carbon\Carbon;
@@ -525,6 +526,7 @@ class StaffEndpoint extends BaseEndpoint
                     'error' => 'Staff ID is required for updates',
                     'data' => $update,
                 ];
+
                 continue;
             }
 

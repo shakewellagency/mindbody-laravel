@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Services\Authentication;
 
 use Carbon\Carbon;
@@ -192,7 +193,7 @@ class TokenManager
                 'response' => $response->json(),
             ]);
 
-            if (401 === $response->status()) {
+            if ($response->status() === 401) {
                 throw AuthenticationException::invalidCredentials($username);
             }
 

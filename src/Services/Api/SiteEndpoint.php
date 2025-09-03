@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 /**
@@ -98,7 +99,7 @@ class SiteEndpoint extends BaseEndpoint
             $allLocations = $this->locations();
 
             return array_filter($allLocations, static function ($location) use ($criteria) {
-                return false !== stripos($location['Name'] ?? '', $criteria['name']);
+                return stripos($location['Name'] ?? '', $criteria['name']) !== false;
             });
         }
 
@@ -409,7 +410,7 @@ class SiteEndpoint extends BaseEndpoint
         }
 
         $overallStatus = array_reduce($checks, static function ($carry, $check) {
-            return $carry && ('ok' === $check['status']);
+            return $carry && ($check['status'] === 'ok');
         }, true);
 
         return [

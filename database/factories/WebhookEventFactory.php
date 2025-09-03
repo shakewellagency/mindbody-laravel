@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Shakewell\MindbodyLaravel\Models\WebhookEvent;
-use Carbon\Carbon;
 
 class WebhookEventFactory extends Factory
 {
@@ -28,7 +28,7 @@ class WebhookEventFactory extends Factory
         ];
 
         return [
-            'event_id' => 'event_' . $this->faker->uuid(),
+            'event_id' => 'event_'.$this->faker->uuid(),
             'event_type' => $this->faker->randomElement($eventTypes),
             'site_id' => (string) $this->faker->randomNumber(5),
             'event_data' => $this->generatePayload(),
@@ -123,7 +123,7 @@ class WebhookEventFactory extends Factory
                     'Status' => $this->faker->randomElement(['Confirmed', 'Cancelled', 'Completed']),
                     'StartDateTime' => $startDateTime->format('c'),
                     'EndDateTime' => $endDateTime->format('c'),
-                    'ClientId' => 'client_' . $this->faker->randomNumber(6),
+                    'ClientId' => 'client_'.$this->faker->randomNumber(6),
                     'StaffId' => $this->faker->randomNumber(4),
                     'LocationId' => $this->faker->randomNumber(2),
                     'SessionType' => [
@@ -140,7 +140,7 @@ class WebhookEventFactory extends Factory
         return [
             'EventData' => [
                 'Client' => [
-                    'Id' => 'client_' . $this->faker->randomNumber(6),
+                    'Id' => 'client_'.$this->faker->randomNumber(6),
                     'FirstName' => $this->faker->firstName(),
                     'LastName' => $this->faker->lastName(),
                     'Email' => $this->faker->unique()->safeEmail(),
@@ -176,13 +176,13 @@ class WebhookEventFactory extends Factory
                     ],
                     'Location' => [
                         'Id' => $this->faker->randomNumber(2),
-                        'Name' => $this->faker->company() . ' Location',
+                        'Name' => $this->faker->company().' Location',
                     ],
                     'MaxCapacity' => $this->faker->numberBetween(10, 50),
                     'BookedCapacity' => $this->faker->numberBetween(0, 30),
                 ],
                 'Client' => [
-                    'Id' => 'client_' . $this->faker->randomNumber(6),
+                    'Id' => 'client_'.$this->faker->randomNumber(6),
                     'FirstName' => $this->faker->firstName(),
                     'LastName' => $this->faker->lastName(),
                     'Email' => $this->faker->safeEmail(),

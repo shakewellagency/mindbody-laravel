@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Commands;
 
 use Illuminate\Console\Command;
@@ -75,12 +76,12 @@ class ListWebhookSubscriptionsCommand extends Command
         // Filter by event type
         if ($eventFilter) {
             $filtered = array_filter($filtered, static function ($subscription) use ($eventFilter) {
-                return false !== stripos($subscription['EventType'], $eventFilter);
+                return stripos($subscription['EventType'], $eventFilter) !== false;
             });
         }
 
         // Filter by status
-        if ($statusFilter && 'all' !== $statusFilter) {
+        if ($statusFilter && $statusFilter !== 'all') {
             $filtered = array_filter($filtered, static function ($subscription) use ($statusFilter) {
                 $status = strtolower($subscription['Status'] ?? 'active');
 

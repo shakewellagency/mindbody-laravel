@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Exceptions;
 
 use Illuminate\Http\Client\Response;
@@ -67,7 +68,9 @@ class MindbodyApiException extends MindbodyException
      */
     public function isApiError(string $errorCode): bool
     {
-        return ($this->apiError['Code'] ?? null) === $errorCode;
+        // Check both the API error code and the original code stored in context
+        return ($this->apiError['Code'] ?? null) === $errorCode ||
+               ($this->getContext()['original_code'] ?? null) === $errorCode;
     }
 
     /**
@@ -77,7 +80,7 @@ class MindbodyApiException extends MindbodyException
     {
         $status = $this->getStatusCode();
 
-        return null !== $status && $status >= 400 && $status < 500;
+        return $status !== null && $status >= 400 && $status < 500;
     }
 
     /**
@@ -87,7 +90,7 @@ class MindbodyApiException extends MindbodyException
     {
         $status = $this->getStatusCode();
 
-        return null !== $status && $status >= 500;
+        return $status !== null && $status >= 500;
     }
 
     /**
@@ -95,6 +98,6 @@ class MindbodyApiException extends MindbodyException
      */
     public function isRateLimitError(): bool
     {
-        return 429 === $this->getStatusCode() || $this->isApiError('TooManyRequests');
+        return $this->getStatusCode() === 429 || $this->isApiError('TooManyRequests');
     }
 }

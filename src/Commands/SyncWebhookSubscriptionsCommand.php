@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Commands;
 
 use Illuminate\Console\Command;
@@ -204,6 +205,7 @@ class SyncWebhookSubscriptionsCommand extends Command
             if ($this->option('dry-run')) {
                 $this->info("Would remove: {$subscription['EventType']} (ID: {$subscription['Id']})");
                 $successCount++;
+
                 continue;
             }
 
@@ -222,6 +224,7 @@ class SyncWebhookSubscriptionsCommand extends Command
             if ($this->option('dry-run')) {
                 $this->info("Would add: {$eventType}");
                 $successCount++;
+
                 continue;
             }
 
@@ -244,6 +247,7 @@ class SyncWebhookSubscriptionsCommand extends Command
             if ($this->option('dry-run')) {
                 $this->info("Would update: {$eventType} (ID: {$subscriptionId})");
                 $successCount++;
+
                 continue;
             }
 

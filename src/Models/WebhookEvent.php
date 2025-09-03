@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Models;
 
 use Carbon\Carbon;
@@ -11,20 +12,20 @@ use Illuminate\Support\Collection;
 /**
  * Webhook event model for storing incoming webhook data.
  *
- * @property int             $id
- * @property null|string     $event_id
- * @property string          $event_type
- * @property null|string     $site_id
- * @property Collection      $event_data
+ * @property int $id
+ * @property null|string $event_id
+ * @property string $event_type
+ * @property null|string $site_id
+ * @property Collection $event_data
  * @property null|Collection $headers
- * @property null|Carbon     $event_timestamp
- * @property bool            $processed
- * @property null|Carbon     $processed_at
- * @property int             $retry_count
- * @property null|string     $error
- * @property null|string     $signature
- * @property Carbon          $created_at
- * @property Carbon          $updated_at
+ * @property null|Carbon $event_timestamp
+ * @property bool $processed
+ * @property null|Carbon $processed_at
+ * @property int $retry_count
+ * @property null|string $error
+ * @property null|string $signature
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class WebhookEvent extends Model
 {
@@ -253,7 +254,7 @@ class WebhookEvent extends Model
             'site_id' => $this->site_id,
             'processed' => $this->processed,
             'retry_count' => $this->retry_count,
-            'has_error' => null !== $this->error,
+            'has_error' => $this->error !== null,
             'age_minutes' => $this->getAgeInMinutes(),
             'created_at' => $this->created_at->toIso8601String(),
         ];

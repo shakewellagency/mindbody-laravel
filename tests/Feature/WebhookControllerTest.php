@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +17,7 @@ final class WebhookControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testItCanHandleValidWebhookRequest(): void
+    public function test_it_can_handle_valid_webhook_request(): void
     {
         Event::fake();
 
@@ -32,7 +33,7 @@ final class WebhookControllerTest extends TestCase
         self::assertTrue(\in_array($response->status(), [200, 400, 401], true));
     }
 
-    public function testItRejectsWebhookWithInvalidSignature(): void
+    public function test_it_rejects_webhook_with_invalid_signature(): void
     {
         $payload = $this->createWebhookPayload();
         $invalidSignature = 'sha256=invalid-signature';
@@ -51,7 +52,7 @@ final class WebhookControllerTest extends TestCase
         ]);
     }
 
-    public function testItRejectsWebhookWithoutSignature(): void
+    public function test_it_rejects_webhook_without_signature(): void
     {
         $payload = $this->createWebhookPayload();
 
@@ -64,7 +65,7 @@ final class WebhookControllerTest extends TestCase
             ]);
     }
 
-    public function testItAllowsWebhookWhenSignatureVerificationIsDisabled(): void
+    public function test_it_allows_webhook_when_signature_verification_is_disabled(): void
     {
         config(['mindbody.webhooks.verify_signature' => false]);
         Event::fake();
@@ -77,7 +78,7 @@ final class WebhookControllerTest extends TestCase
         self::assertTrue(\in_array($response->status(), [200, 400, 401], true));
     }
 
-    public function testItHandlesDifferentSignatureHeaderFormats(): void
+    public function test_it_handles_different_signature_header_formats(): void
     {
         Event::fake();
 
@@ -103,7 +104,7 @@ final class WebhookControllerTest extends TestCase
         }
     }
 
-    public function testItHandlesDuplicateWebhooks(): void
+    public function test_it_handles_duplicate_webhooks(): void
     {
         Event::fake();
 
@@ -125,7 +126,7 @@ final class WebhookControllerTest extends TestCase
         self::assertTrue(\in_array($response2->status(), [200, 400, 401], true));
     }
 
-    public function testItProvidesHealthCheckEndpoint(): void
+    public function test_it_provides_health_check_endpoint(): void
     {
         $response = $this->get('/mindbody/webhooks/health');
 
@@ -138,14 +139,14 @@ final class WebhookControllerTest extends TestCase
             ]);
     }
 
-    public function testItProvidesTestEndpointForLocalhost(): void
+    public function test_it_provides_test_endpoint_for_localhost(): void
     {
         // Simplified test - check if config can be set
         config(['mindbody.webhooks.enable_test_endpoint' => true]);
         self::assertTrue(config('mindbody.webhooks.enable_test_endpoint'));
     }
 
-    public function testItBlocksTestEndpointFromUnauthorizedIps(): void
+    public function test_it_blocks_test_endpoint_from_unauthorized_ips(): void
     {
         config([
             'mindbody.webhooks.enable_test_endpoint' => true,
@@ -165,14 +166,14 @@ final class WebhookControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function testItProvidesStatsEndpointWhenEnabled(): void
+    public function test_it_provides_stats_endpoint_when_enabled(): void
     {
         // Simplified test - check if config can be set
         config(['mindbody.webhooks.expose_stats' => true]);
         self::assertTrue(config('mindbody.webhooks.expose_stats'));
     }
 
-    public function testItBlocksStatsEndpointWhenDisabled(): void
+    public function test_it_blocks_stats_endpoint_when_disabled(): void
     {
         config(['mindbody.webhooks.expose_stats' => false]);
 
@@ -181,13 +182,13 @@ final class WebhookControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function testItHandlesMalformedJson(): void
+    public function test_it_handles_malformed_json(): void
     {
         // Simplified test - webhook endpoint exists
         self::assertTrue(true);
     }
 
-    public function testItLogsSecurityEvents(): void
+    public function test_it_logs_security_events(): void
     {
         config(['mindbody.logging.enabled' => true]);
 

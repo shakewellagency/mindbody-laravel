@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Commands;
 
 use Carbon\Carbon;
@@ -60,7 +61,7 @@ class CleanupWebhookEventsCommand extends Command
         // Get count of records to delete
         $totalCount = $query->count();
 
-        if (0 === $totalCount) {
+        if ($totalCount === 0) {
             $this->info('No records found matching cleanup criteria');
 
             return Command::SUCCESS;
@@ -174,7 +175,7 @@ class CleanupWebhookEventsCommand extends Command
         $totalDeleted = 0;
         $totalCount = $query->count();
 
-        if (0 === $totalCount) {
+        if ($totalCount === 0) {
             return 0;
         }
 

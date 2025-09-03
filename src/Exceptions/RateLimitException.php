@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Exceptions;
 
 /**
@@ -22,7 +23,7 @@ class RateLimitException extends MindbodyApiException
     ): self {
         $message = "Rate limit exceeded for {$limitType}";
 
-        if (null !== $retryAfter) {
+        if ($retryAfter !== null) {
             $message .= ". Retry after {$retryAfter} seconds";
         }
 
@@ -76,6 +77,6 @@ class RateLimitException extends MindbodyApiException
      */
     public function shouldRetry(): bool
     {
-        return null !== $this->retryAfter && $this->retryAfter > 0;
+        return $this->retryAfter !== null && $this->retryAfter > 0;
     }
 }

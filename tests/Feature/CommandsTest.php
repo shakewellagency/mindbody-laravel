@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Tests\Feature;
 
 use GuzzleHttp\Psr7\Response;
@@ -17,21 +18,21 @@ final class CommandsTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testApiConnectionCommandPassesWithValidCredentials(): void
+    public function test_api_connection_command_passes_with_valid_credentials(): void
     {
         // Simplified test - command exists and can be called (may fail due to credentials)
         $result = $this->artisan('mindbody:test-connection');
         self::assertContains($result->getExitCode(), [0, 1]); // Accept both success and failure codes
     }
 
-    public function testApiConnectionCommandFailsWithInvalidCredentials(): void
+    public function test_api_connection_command_fails_with_invalid_credentials(): void
     {
         // Simplified test - command exists and can be called
         $result = $this->artisan('mindbody:test-connection');
         self::assertContains($result->getExitCode(), [0, 1]); // Accept both success and failure codes
     }
 
-    public function testListWebhooksCommandDisplaysSubscriptions(): void
+    public function test_list_webhooks_command_displays_subscriptions(): void
     {
         $this->mockHttpResponse([
             new Response(200, [], json_encode([
@@ -55,7 +56,7 @@ final class CommandsTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testSubscribeWebhooksCommandCreatesSubscriptions(): void
+    public function test_subscribe_webhooks_command_creates_subscriptions(): void
     {
         $this->mockHttpResponse([
             new Response(200, [], json_encode([
@@ -76,7 +77,7 @@ final class CommandsTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testUnsubscribeWebhooksCommandRemovesSubscriptions(): void
+    public function test_unsubscribe_webhooks_command_removes_subscriptions(): void
     {
         $this->mockHttpResponse([
             // Get subscriptions
@@ -102,7 +103,7 @@ final class CommandsTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testSyncWebhooksCommandSynchronizesSubscriptions(): void
+    public function test_sync_webhooks_command_synchronizes_subscriptions(): void
     {
         config(['mindbody.webhooks.events' => ['appointment.booked', 'client.created']]);
 
@@ -136,7 +137,7 @@ final class CommandsTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testProcessWebhooksCommandProcessesPendingEvents(): void
+    public function test_process_webhooks_command_processes_pending_events(): void
     {
         // Create test webhook events
         $events = WebhookEvent::factory()->count(3)->create([
@@ -156,7 +157,7 @@ final class CommandsTest extends TestCase
         }
     }
 
-    public function testProcessWebhooksCommandHandlesFailedEvents(): void
+    public function test_process_webhooks_command_handles_failed_events(): void
     {
         // Create test webhook event that will fail processing
         $event = WebhookEvent::factory()->create([
@@ -174,7 +175,7 @@ final class CommandsTest extends TestCase
         self::assertNotNull($event->error_message);
     }
 
-    public function testCleanupWebhooksCommandRemovesOldEvents(): void
+    public function test_cleanup_webhooks_command_removes_old_events(): void
     {
         // Create old processed events
         WebhookEvent::factory()->count(5)->create([
@@ -199,7 +200,7 @@ final class CommandsTest extends TestCase
         $this->assertDatabaseCount('mindbody_webhook_events', 3);
     }
 
-    public function testCleanupWebhooksCommandRespectsStatusFilter(): void
+    public function test_cleanup_webhooks_command_respects_status_filter(): void
     {
         // Create old events with different statuses
         WebhookEvent::factory()->count(3)->create([
@@ -225,7 +226,7 @@ final class CommandsTest extends TestCase
         $this->assertDatabaseHas('mindbody_webhook_events', ['status' => 'failed']);
     }
 
-    public function testDryRunModeShowsChangesWithoutExecuting(): void
+    public function test_dry_run_mode_shows_changes_without_executing(): void
     {
         WebhookEvent::factory()->count(5)->create([
             'status' => 'processed',

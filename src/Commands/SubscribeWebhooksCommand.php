@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Commands;
 
 use Illuminate\Console\Command;
@@ -131,6 +132,7 @@ class SubscribeWebhooksCommand extends Command
             if ($this->option('dry-run')) {
                 $this->info("Would subscribe to: {$eventType}");
                 $successCount++;
+
                 continue;
             }
 

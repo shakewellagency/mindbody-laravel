@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -32,9 +33,9 @@ abstract class TestCase extends Orchestra
     {
         config()->set('database.default', 'testing');
         config()->set('database.connections.testing', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
 
         // Set up basic Mindbody configuration for testing

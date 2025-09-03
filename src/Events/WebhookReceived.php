@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;

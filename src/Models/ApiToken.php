@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Models;
 
 use Carbon\Carbon;
@@ -10,14 +11,14 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * API token model for caching authentication tokens.
  *
- * @property int    $id
+ * @property int $id
  * @property string $username
  * @property string $access_token
  * @property string $token_type
- * @property int    $expires_in
+ * @property int $expires_in
  * @property Carbon $issued_at
  * @property Carbon $expires_at
- * @property bool   $revoked
+ * @property bool $revoked
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */

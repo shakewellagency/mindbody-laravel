@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 use Carbon\Carbon;
@@ -577,6 +578,7 @@ class SaleEndpoint extends BaseEndpoint
                     'error' => 'sale_id and items are required',
                     'data' => $returnData,
                 ];
+
                 continue;
             }
 

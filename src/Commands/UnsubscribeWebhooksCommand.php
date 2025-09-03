@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Commands;
 
 use Illuminate\Console\Command;
@@ -196,6 +197,7 @@ class UnsubscribeWebhooksCommand extends Command
             if ($this->option('dry-run')) {
                 $this->info("Would unsubscribe from: {$eventType} (ID: {$id})");
                 $successCount++;
+
                 continue;
             }
 

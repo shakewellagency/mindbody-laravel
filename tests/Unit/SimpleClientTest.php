@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
@@ -18,12 +19,12 @@ final class SimpleClientTest extends TestCase
 {
     private MindbodyClient $client;
 
-    public function testItCanCreateClient(): void
+    public function test_it_can_create_client(): void
     {
         self::assertInstanceOf(MindbodyClient::class, $this->client);
     }
 
-    public function testItHasRequiredEndpoints(): void
+    public function test_it_has_required_endpoints(): void
     {
         self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\ClientEndpoint::class, $this->client->client);
 
@@ -38,14 +39,14 @@ final class SimpleClientTest extends TestCase
         self::assertInstanceOf(\Shakewell\MindbodyLaravel\Services\Api\SiteEndpoint::class, $this->client->site);
     }
 
-    public function testItHasExceptionClasses(): void
+    public function test_it_has_exception_classes(): void
     {
         self::assertTrue(class_exists(AuthenticationException::class));
         self::assertTrue(class_exists(RateLimitException::class));
         self::assertTrue(class_exists(WebhookValidationException::class));
     }
 
-    public function testItHasRequiredMethods(): void
+    public function test_it_has_required_methods(): void
     {
         self::assertTrue(method_exists($this->client, 'authenticate'));
         self::assertTrue(method_exists($this->client, 'get'));

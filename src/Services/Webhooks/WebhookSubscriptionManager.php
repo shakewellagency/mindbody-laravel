@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Services\Webhooks;
 
 use Illuminate\Support\Facades\Cache;
@@ -331,7 +332,7 @@ class WebhookSubscriptionManager
 
             $status[$eventType] = [
                 'configured' => true,
-                'subscribed' => null !== $subscription,
+                'subscribed' => $subscription !== null,
                 'subscription_id' => $subscription['SubscriptionId'] ?? null,
                 'is_active' => $subscription['IsActive'] ?? false,
                 'webhook_url' => $subscription['WebhookUrl'] ?? null,

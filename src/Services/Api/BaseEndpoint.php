@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 use Carbon\Carbon;
@@ -30,7 +31,7 @@ abstract class BaseEndpoint
      */
     protected function getAll(string $endpoint, array $params = [], int $limit = 100): array
     {
-        if (false === $this->client->getConfig('features.auto_pagination')) {
+        if ($this->client->getConfig('features.auto_pagination') === false) {
             return $this->client->get($endpoint, array_merge($this->defaultParams, $params));
         }
 
@@ -129,7 +130,7 @@ abstract class BaseEndpoint
     /**
      * Format date parameter for API.
      *
-     * @param mixed $date
+     * @param  mixed  $date
      */
     protected function formatDate($date): string
     {
@@ -147,7 +148,7 @@ abstract class BaseEndpoint
     /**
      * Format date parameter for API (date only, no time).
      *
-     * @param mixed $date
+     * @param  mixed  $date
      */
     protected function formatDateOnly($date): string
     {
@@ -168,7 +169,7 @@ abstract class BaseEndpoint
     protected function prepareParams(array $params): array
     {
         // Remove null values
-        $params = array_filter($params, static fn ($value) => null !== $value);
+        $params = array_filter($params, static fn ($value) => $value !== null);
 
         // Convert boolean values to strings as expected by API
         array_walk_recursive($params, static function (&$value) {
@@ -266,8 +267,8 @@ abstract class BaseEndpoint
     /**
      * Apply a single validation rule.
      *
-     * @param mixed $value
-     * @param mixed $rule
+     * @param  mixed  $value
+     * @param  mixed  $rule
      */
     protected function applyValidationRule($value, $rule)
     {

@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Services;
 
 use Illuminate\Http\Client\PendingRequest;
@@ -35,6 +36,7 @@ class MindbodyClient
     public readonly SiteEndpoint $site;
 
     public readonly StaffEndpoint $staff;
+
     protected array $config;
 
     protected TokenManager $tokenManager;
@@ -131,7 +133,7 @@ class MindbodyClient
     public function request(string $method, string $endpoint, array $options = []): array
     {
         // Add caching for GET requests
-        if ('GET' === $method && $this->isCacheEnabled()) {
+        if ($method === 'GET' && $this->isCacheEnabled()) {
             $cacheKey = $this->getCacheKey($endpoint, $options['query'] ?? []);
             $ttl = $this->getCacheTtl($endpoint);
 
@@ -172,7 +174,7 @@ class MindbodyClient
      */
     public function getConfig(?string $key = null): mixed
     {
-        if (null === $key) {
+        if ($key === null) {
             return $this->config;
         }
 
@@ -246,7 +248,7 @@ class MindbodyClient
         ]);
 
         // Handle rate limiting
-        if (429 === $response->status()) {
+        if ($response->status() === 429) {
             $retryAfter = $response->header('Retry-After');
             throw RateLimitException::limitExceeded($retryAfter ? (int) $retryAfter : null);
         }

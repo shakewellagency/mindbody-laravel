@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Shakewell\MindbodyLaravel\Exceptions;
 
 use Exception;
@@ -20,12 +21,19 @@ class MindbodyException extends \Exception
      */
     public function __construct(
         string $message = '',
-        int $code = 0,
+        string|int $code = 0,
         ?\Exception $previous = null,
         array $context = []
     ) {
-        parent::__construct($message, $code, $previous);
+        // Convert string codes to hash integers for Exception compatibility
+        $intCode = is_string($code) ? crc32($code) : $code;
+        parent::__construct($message, $intCode, $previous);
         $this->context = $context;
+
+        // Store the original code for API error comparison
+        if (is_string($code)) {
+            $this->context['original_code'] = $code;
+        }
     }
 
     /**
