@@ -1,5 +1,6 @@
 {
     "name": "shakewell/mindbody-laravel",
+    "version": "1.0.0",
     "description": "Laravel package for Mindbody Public API v6 and Webhooks integration",
     "keywords": [
         "shakewell",
