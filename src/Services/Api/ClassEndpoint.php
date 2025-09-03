@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 namespace Shakewell\MindbodyLaravel\Services\Api;
 
 use Carbon\Carbon;
@@ -263,8 +262,8 @@ class ClassEndpoint extends BaseEndpoint
         $webBookings = $class['WebCapacity'] ?? 0;
         $totalWebBookings = $class['TotalWebBookings'] ?? 0;
 
-        $hasGeneralCapacity = $maxCapacity === 0 || $totalBookings < $maxCapacity;
-        $hasWebCapacity = $webBookings === 0 || $totalWebBookings < $webBookings;
+        $hasGeneralCapacity = 0 === $maxCapacity || $totalBookings < $maxCapacity;
+        $hasWebCapacity = 0 === $webBookings || $totalWebBookings < $webBookings;
 
         $isAvailable = $hasGeneralCapacity && $hasWebCapacity;
 
