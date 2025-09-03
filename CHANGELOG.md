@@ -2,6 +2,42 @@
 
 All notable changes to `mindbody-laravel` will be documented in this file.
 
+## v1.0.0 - Initial Release - 2025-09-03
+
+### MindbBody Laravel Package v1.0.0
+
+#### Features
+
+- Complete MindbBody Public API v6 integration
+- Support for all major endpoints: Site, Staff, Classes, Appointments, Sales, Clients
+- Laravel Sanctum authentication support
+- Webhook handling with signature verification
+- Comprehensive error handling and logging
+- Configurable caching for performance optimization
+
+#### API Endpoints
+
+- **Site Information**: Current site details, locations, programs, session types
+- **Staff Management**: All staff, active staff, individual staff members
+- **Class Management**: Classes with filtering, class descriptions
+- **Appointment Management**: Appointments with filtering, individual appointments
+- **Sales & Transactions**: Sales data with date filtering
+- **Client Management**: Client listing and individual client details
+
+#### Webhooks
+
+- Secure webhook endpoint with signature verification
+- Event-driven architecture for real-time updates
+- Configurable webhook subscriptions
+
+#### Fixed Issues
+
+- ✅ Fixed appointment endpoint URLs for MindbBody API v6 compatibility
+- ✅ Fixed class descriptions data extraction
+- ✅ Improved error handling and response validation
+
+This is the first stable release of the shakewellagency/mindbody-laravel package.
+
 ## MindbBody Laravel Package v1.0.0 - 2025-09-03
 
 ### 🎉 MindbBody Laravel Package v1.0.0
@@ -42,6 +78,7 @@ First stable release of the comprehensive Laravel package for MindbBody Public A
 composer require shakewellagency/mindbody-laravel
 php artisan vendor:publish --provider="Shakewell\MindbodyLaravel\MindbodyLaravelServiceProvider"
 
+
 ```
 #### 📊 API Status
 
@@ -74,15 +111,25 @@ Comprehensive test suite with unit and integration tests covering all API endpoi
 ### Added
 
 - Initial release of Mindbody Laravel Package
+  
 - Complete API client implementation for Mindbody Public API v6
+  
 - All major endpoint support (Client, Class, Appointment, Sale, Staff, Site)
+  
 - OAuth authentication with automatic token management
+  
 - Comprehensive webhook system with signature verification
+  
 - Database migrations for webhook events and API tokens
+  
 - Eloquent models with proper relationships and scopes
+  
 - Laravel service provider with package registration
+  
 - Facade for fluent API access
+  
 - Comprehensive Artisan command suite:
+  
   - `mindbody:test-connection` - Test API connectivity
   - `mindbody:subscribe-webhooks` - Subscribe to webhook events
   - `mindbody:unsubscribe-webhooks` - Unsubscribe from webhooks
@@ -92,14 +139,23 @@ Comprehensive test suite with unit and integration tests covering all API endpoi
   - `mindbody:cleanup-webhooks` - Clean up old events
   
 - Middleware for webhook signature verification
+  
 - Event system for webhook processing
+  
 - Comprehensive exception hierarchy for error handling
+  
 - Built-in caching with configurable TTL per endpoint
+  
 - Rate limiting support with per-endpoint configuration
+  
 - Retry mechanisms with exponential backoff
+  
 - Comprehensive test suite with PHPUnit
+  
 - Model factories for testing
+  
 - Complete documentation and usage examples
+  
 
 ### Features
 
